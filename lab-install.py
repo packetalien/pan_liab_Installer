@@ -45,6 +45,7 @@ import shutil
 from platform import system
 from subprocess import call
 from logging.handlers import RotatingFileHandler
+from os.path import expanduser
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
