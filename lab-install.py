@@ -379,18 +379,18 @@ def main():
             for eachvm in vmxlist:
                 if filecheck(eachvm):
                     print("\n")
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("%s already unpacked" % eachvm)
                     logger.debug("%s already unpacked." % eachvm)
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("\n")
                 else:
                     print("\n")
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("We are unpacking %s, this could take some time. \n " % (eachvm))
                     unpackova(ovalist[countvm])
                     print("For support joing #labinabox on Slack.")
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("\n")
                 countvm = countvm + 1
             for eachstart in vmxlist:
@@ -432,18 +432,18 @@ def main():
             for eachvm in vmxlist:
                 if filecheckwin(eachvm):
                     print("\n")
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("%s already unpacked" % eachvm)
                     logger.debug("%s already unpacked." % eachvm)
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("\n")
                 else:
                     print("\n")
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("We are unpacking %s, this could take some time. \n " % (eachvm))
                     unpackovawin(ovalist[countvm])
                     print("For support joing #labinabox on Slack.")
-                    print("{:-^30s}".format("Importing OVA %s" eachvm))
+                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
                     print("\n")
                 countvm = countvm + 1
             for eachstart in vmxlist:
