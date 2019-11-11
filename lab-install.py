@@ -352,7 +352,7 @@ def main():
     countvm = 0
     countstart = 0
     countsuspend = 0
-    oscheck = platform.system()
+    oscheck = system()
     if oscheck == "Darwin":
         try:
             for each in ovalist:
