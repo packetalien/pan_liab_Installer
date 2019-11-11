@@ -348,8 +348,6 @@ def suspendvmwin(vmvmx,vmvm):
 
 
 def main():
-    username,homedir = getuser()
-    countdel = 0
     count = 0
     countvm = 0
     countstart = 0
