@@ -75,11 +75,11 @@ logger.setLevel("DEBUG")
 # TODO: Upgrade to new vmcontrols library wrapper.
 
 ovalist = [
-    "msft-tmsclient-w10.ova",
+    "oss-tmsclient-linux.ova",
     "pan-soc.ova"
 ]
 vmxlist = [
-    "msft-tmsclient-w10.vmx",
+    "oss-tmsclient-linux.vmx",
     "pan-soc.vmx"
     ]
 ovafiledir = [
@@ -99,74 +99,6 @@ chrome_path = "open -a /Applications/Google\ Chrome.app %s"
 chrome_path_win = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 
 # Functions
-
-
-def save(url, filename):
-    '''
-    Simple download function based on requests. Takes in
-    a url and a filename. Saves to directory that script
-    is executed in.
-    '''
-    with open(filename, "wb") as f:
-        print("Downloading %s" % filename)
-        logger.debug("Downloading %s" % filename) 
-        response = requests.get(url, stream=True, verify=False)
-        total_length = response.headers.get('content-length')
-        if total_length is None: # no content length header
-            f.write(response.content)
-        else:
-            dl = 0
-            total_length = int(total_length)
-            for data in response.iter_content(chunk_size=4096):
-                dl += len(data)
-                f.write(data)
-                done = int(50 * dl / total_length)
-                sys.stdout.write("\r[%s%s]" % ('*' * done, ' ' * (50-done)) )    
-                sys.stdout.flush()
-
-def sha1sum(filename):
-    '''
-    Takes in a filename and returns a sha1 summary hash.
-    Uses hashlib.sha1(). Expects a string as the filename.
-    Can take literal path.
-    Will not map userdirectory from ~
-    Uses read(128* filename.block_size) for speed.
-    '''
-    shasum = hashlib.sha1()
-    logger.info("Started sha1 on file %s: " % filename)
-    logger.debug("Started at %s" % str(self.timestamp()))
-    with open(filename, 'rb') as f:
-        for chunk in iter(lambda: f.read(128 * shasum.block_size), b''):
-            shasum.update(chunk)
-    logger.debug("Finished sha1 at: %s" % str(self.timestamp()) )
-    return shasum.hexdigest()
-
-def getfile(url, filename):
-    dircheckmacos()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    ovafile = home + basedir + "/" + filename
-    r = requests.get(url, stream=True)
-    with open(ovafile, 'wb') as ova:
-        total_length = int(r.headers.get('content-length'))
-        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
-            if chunk:
-                ova.write(chunk)
-                ova.flush()
-
-
-def save(url, filename):
-    dircheckmacos()
-    home = getuser()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    savedir = home + basedir + "/" + filename
-    urllib.urlretrieve(url, savedir, reporthook)
-
-def savewin(url, filename):
-    dircheckwin()
-    home = getuser()
-    basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
-    savedir = os.path.normpath(home + basedir + "/" + filename)
-    urllib.urlretrieve(url, savedir, reporthook)
 
 def getuser():
     home = expanduser("~")
@@ -309,14 +241,6 @@ def suspendvmwin(vmvmx,vmvm):
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "suspend" + " " + registervm)
     call(cmdtrue, shell=True)
 
-def suspendvmwin(vmvmx,vmvm):
-    home = getuser()
-    basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
-    registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
-    cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "stop" + " " + registervm)
-    call(cmdtrue, shell=True)
-
 
 def main():
     count = 0
@@ -326,7 +250,7 @@ def main():
     oscheck = system()
     if oscheck == "Darwin":
         try:
-            if filecheck(ovalist(1)):
+            if filecheck(ovalist[1]):
                 print("\n")
                 print("{:-^30s}".format("File Check"))
                 logger.debug("File located: %s" % ovalist[1])
@@ -347,7 +271,6 @@ def main():
                 print("\n")
                 print("{:-^30s}".format("Locating and deleteing deprecated VM"))
                 logger.debug("File located: %s" % vmxlist[0])
-                print("SUCCESS: File %s Located." % (vmxlist[0]))
                 deletevm(ovafiledir[0],vmxlist[0])
                 print("SUCCESS: VM DELETED.")
             if filecheck(vmxlist[1]):
