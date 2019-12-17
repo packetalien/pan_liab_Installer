@@ -60,7 +60,7 @@ logLevel = 'DEBUG'
 maxSize = 10000000
 numFiles = 10
 handler = RotatingFileHandler(
-    'controller.log', maxBytes=maxSize, backupCount=numFiles
+    'installer.log', maxBytes=maxSize, backupCount=numFiles
     )
 formatter = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
