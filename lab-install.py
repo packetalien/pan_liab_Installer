@@ -318,7 +318,7 @@ def startvmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "start" + " " + registervm)
     call(cmdtrue, shell=True)
 
@@ -326,7 +326,7 @@ def deletevmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "deleteVM" + " " + registervm)
     call(cmdtrue, shell=True)
 
@@ -334,7 +334,7 @@ def suspendvmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "suspend" + " " + registervm)
     call(cmdtrue, shell=True)
 
