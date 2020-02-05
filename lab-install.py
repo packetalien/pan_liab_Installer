@@ -342,7 +342,7 @@ def suspendvmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "stop" + " " + registervm)
     call(cmdtrue, shell=True)
 
