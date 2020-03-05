@@ -78,7 +78,7 @@ ovalist = [
     "oss-setools-linux.ova",
     "msft-esm-dc.ova",
     "msft-victim-w7.ova",
-    "oss-tmsclient-linux.ova",
+    "pan-soc.ova",
     "msft-tmsclient-w10.ova",
     "msft-rodc.ova",
     "pan-panorama.ova"
@@ -88,7 +88,7 @@ vmxlist = [
     "oss-setools-linux.vmx",
     "msft-esm-dc.vmx",
     "msft-victim-w7.vmx",
-    "oss-tmsclient-linux.vmx",
+    "pan-soc.vmx",
     "msft-tmsclient-w10.vmx",
     "msft-rodc.vmx",
     "pan-panorama.vmx"
@@ -98,7 +98,7 @@ ovafiledir = [
     "/oss-setools-linux.vmwarevm/",
     "/msft-esm-dc.vmwarevm/",
     "/msft-victim-w7.vmwarevm/",
-    "/oss-tmsclient-linux.vmwarevm/",
+    "/pan-soc.vmwarevm/",
     "/msft-tmsclient-w10.vmwarevm/",
     "/msft-rodc.vmwarevm/",
     "/pan-panorama.vmwarevm/"
@@ -108,7 +108,7 @@ ovafiledirwin = [
     "oss-setools-linux/",
     "msft-esm-dc/",
     "msft-victim-w7/",
-    "oss-tmsclient-linux/",
+    "pan-soc/",
     "msft-tmsclient-w10/",
     "msft-rodc/",
     "pan-panorama/"
@@ -118,7 +118,7 @@ ovagdrive = [
     "https://drive.google.com/open?id=1lSWZXPnFVuUnmnyXAz2jYioy_Sjn9hg8",
     "https://drive.google.com/open?id=1-w7MBivrip_4MoTc0eHLmzNbmrlqf1vZ",
     "https://drive.google.com/open?id=1YGeB7J4XnxjoFtLe4fReINeeQqnhfLCB",
-    "https://drive.google.com/open?id=1MjAb3ouk4PsQUAMK1baDigSJfFirHAnO",
+    "https://drive.google.com/open?id=1aefjrB9NUeSjllJU25Obzqt6GTaXFzut",
     "https://drive.google.com/open?id=1xk4J01BQToKL-zvwDu_mUyMQrfE_Cr8S",
     "https://drive.google.com/open?id=1CBG24OCb35JApZwKWNi3JKFVYK9fFeIg",
     "https://drive.google.com/open?id=13Ulp8ehzL_iMA9pNMAPCwpVg591pxHeY"
@@ -318,7 +318,7 @@ def startvmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "start" + " " + registervm)
     call(cmdtrue, shell=True)
 
@@ -326,7 +326,7 @@ def deletevmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "deleteVM" + " " + registervm)
     call(cmdtrue, shell=True)
 
@@ -334,7 +334,7 @@ def suspendvmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "suspend" + " " + registervm)
     call(cmdtrue, shell=True)
 
@@ -342,7 +342,7 @@ def suspendvmwin(vmvmx,vmvm):
     home = getuser()
     basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
     registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
+    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
     cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "stop" + " " + registervm)
     call(cmdtrue, shell=True)
 
