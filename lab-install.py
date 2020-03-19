@@ -267,7 +267,7 @@ def import_network_settings(config_file, location):
         cmd = r"c:\Program Files (x86)\VMware\VMware Workstation\vnetlib.exe -- import "
         logger.debug("Sending following command to shell: %s" % (cmd))
         netcfg = getuser() + os.sep + config_file
-        Popen(cmd + , shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
+        Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
         logger.info("VMWare Workstation Started %s" % (cmd))
     except:
         logger.debug("Exception occured in start_workstation()")
