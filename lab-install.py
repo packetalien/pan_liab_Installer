@@ -100,7 +100,7 @@ liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc
 # Default Directories
 vmware_dir_windows = "Documents\Virtual Machines"
 vmware_dir_macos = "Virtual Machines.localized"
-IT_SCCM_dir = "C:\PANW\AppLogs"
+IT_SCCM_dir = "C:\ProgramData"
 
 # Legacy Directory (deprecated)
 legacy_dir = "IT-Managed-VMs"
