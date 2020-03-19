@@ -47,6 +47,7 @@ import glob
 from time import strftime
 from platform import system
 from subprocess import call
+from subprocess import Popen
 from logging.handlers import RotatingFileHandler
 from os.path import expanduser
 from os import path
@@ -79,64 +80,6 @@ logger.setLevel("DEBUG")
 # TODO: Upgrade to new vmcontrols library wrapper.
 # TODO: add _ for PEP8
 # TODO: Migrate variables below to new JSON format.
-'''
-Left for legacy reasons, TODO: Delete during next update.
-vm_list = [
-    "panpanosvm50",
-    "osssetoolslinux",
-    "msftesm-dc",
-    "msftvictimw7",
-    "pansoc",
-    "msfttmsclientw10",
-    "msftrodc",
-    "panpanorama",
-    "panexpedition"
-]
-ovalist = [
-    "pan-panos-vm50.ova",
-    "oss-setools-linux.ova",
-    "msft-esm-dc.ova",
-    "msft-victim-w7.ova",
-    "pan-soc.ova",
-    "msft-tmsclient-w10.ova",
-    "msft-rodc.ova",
-    "pan-panorama.ova",
-    "pan-expedition.ova"
-]
-vmxlist = [
-    "pan-panos-vm50.vmx",
-    "oss-setools-linux.vmx",
-    "msft-dc.vmx",
-    "msft-victim-w7.vmx",
-    "pan-soc.vmx",
-    "msft-w10.vmx",
-    "msft-rodc.vmx",
-    "pan-panorama.vmx",
-    "pan-expedition.vmx"
-    ]
-ovafiledir = [
-    "/pan-panos.vmwarevm/",
-    "/oss-setools-linux.vmwarevm/",
-    "/msft-esm-dc.vmwarevm/",
-    "/msft-victim-w7.vmwarevm/",
-    "/pan-soc.vmwarevm/",
-    "/msft-tmsclient-w10.vmwarevm/",
-    "/msft-rodc.vmwarevm/",
-    "/pan-panorama.vmwarevm/",
-    "/pan-expedition.vmwarevm/"
-    ]
-ovafiledirwin = [
-    "pan-panos/",
-    "oss-setools-linux/",
-    "msft-esm-dc/",
-    "msft-victim-w7/",
-    "oss-tmsclient-linux/",
-    "msft-tmsclient-w10/",
-    "msft-rodc/",
-    "pan-panorama/",
-    "pan-expedition/"
-    ]
-'''
 # TODO: Move to imported files for portability.
 # TODO look at path normalization, Localized Variables
 # TODO: Create builder class for installer
@@ -146,28 +89,42 @@ ovafiledirwin = [
 panos_vmx = "https://raw.githubusercontent.com/packetalien/diabresources/master/vmx/pan-panos-vm50.vmx"
 setools_vmx = "https://raw.githubusercontent.com/packetalien/diabresources/master/vmx/oss-setools-linux.vmx"
 vminfo_url = "https://raw.githubusercontent.com/packetalien/diabresources/master/db/vminfo.json"
-fusion_url = 'https://raw.githubusercontent.com/packetalien/fusion-network-config/master/fusion-vmnet-config.txt'
+fusion_url = "https://raw.githubusercontent.com/packetalien/fusion-network-config/master/vmnet-configure.py"
+win_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36656"
+macos_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36686"
+workstation_url = "https://github.com/packetalien/diabresources/blob/master/db/defaultse?raw=true"
+pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZHyX2AQ"
+liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc2uqicV0ziW4"
 
-# Default VMware Directories
-vmware_dir_windows = "\"Documents\\Virtual Machines\\\"" 
+# TODO: Move all of this to a CONF file.
+# Default Directories
+vmware_dir_windows = "Documents\Virtual Machines"
 vmware_dir_macos = "Virtual Machines.localized"
+IT_SCCM_dir = "C:\PANW\AppLogs"
 
 # Legacy Directory (deprecated)
 legacy_dir = "IT-Managed-VMs"
 
-# Default Chrome install paths for MacOS and Windows
+# Default Application install paths for MacOS and Windows
+# TODO: Move to python3 when IT supports it.
 chrome_path = "open -a /Applications/Google\ Chrome.app %s"
 chrome_path_win = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+vnetlib_windows = r"c:\Program Files (x86)\VMware\VMware Workstation\vnetlib64.exe"
+python_mac = "/usr/bin/python"
 
 # Files TODO: Move to conf file.
+# Files TODO: Normalize naming.
 vmnetfile = "fusion-vmnet-config.txt"
-funsioncfgfile = 'networking'
+fusion_loader = 'vmnet-configure.py'
+workstationcfgfile = "defaultse"
 vminfo_filename = "vminfo.json"
 panos_vmx_filename = "pan-panos-vm50.vmx"
 setools_vmx_filename = "pan-panos-vm50.vmx"
+IT_artifact_file = "liab-installed.txt"
+pan_license_filename = "pan-license-vmseries.py"
 
 # Hard Coded hashes, TODO: Move to conf file.
-vminfo_sha = "c3a090f12794cd35579ba9d8f0187761dfd4452e"
+vminfo_sha = "86ceb980243efcc48b22309a79d4cff7f0618226"
 panos_vmx_hash = "559fbc57ef121eb88076e821454371e100e59061"
 se_tools_vmx_hash = "28b694dfa0fd6ca75b466c14574e3b16cb8af8b6"
 
@@ -202,6 +159,7 @@ def save(url, filename):
                 sys.stdout.write("\r[%s%s]" %
                                  ('*' * done, ' ' * (50-done)) )    
                 sys.stdout.flush()
+    print("\n")
 
 def sha1sum(filename):
     '''
@@ -213,6 +171,8 @@ def sha1sum(filename):
     '''
     shasum = hashlib.sha1()
     logger.info("Started sha1 on file %s: " % filename)
+    print("Started sha1 on file: %s " % filename)
+    print("This could take some time....")
     logger.debug("Started at %s" % str(timestamp()))
     with open(filename, 'rb') as f:
         for chunk in iter(lambda: f.read(128 * shasum.block_size), b''):
@@ -236,22 +196,82 @@ def check_sha1sum(master,local):
         logger.debug("something went wrong in check_sha1sum()")
 
 def stop_fusion():
+    '''
+    Function uses osascript to stop Fusion.
+    '''
     try:
-        call(['osascript', '-e', 'tell application "VMWare FUsion" to quit'])
+        call(['osascript', '-e', 'tell application "VMWare Fusion" to quit'])
     except:
         logger.debug("Exception occured in start_fusion()")
 
 def stop_workstation():
-    pass
+    '''
+    Function sends a taskkill command to Windows.
+    TODO: use check_call and check_output
+    
+    WARNING: Function uses shell=True argument due
+    to Windows commmand processing compatibility with
+    VMWare Workstation.
+    '''
+    # "C:\Program Files (x86)\VMware\VMware Workstation\vmware.exe"
+    try:
+        process = "vmware.exe"
+        cmd = r"C:\Windows\System32\taskkill.exe"
+        cmdtrue = (cmd + " " + "/f" + " " + "/im" + " " + process)
+        logger.debug("Sent following command to shell: %s" % (cmdtrue))
+        call(cmdtrue, shell=True)
+    except:
+        print("Something happened stopping Workstation.")
+        logger.info("Something happened stopping Workstation.")    
 
 def start_fusion():
+    '''
+    Function uses osascript to activate Fusion.
+    '''
     try:
-        call(['osascript', '-e', 'tell application "VMWare FUsion" to activate'])
+        call(['osascript', '-e', 'tell application "VMWare Fusion" to activate'])
     except:
         logger.debug("Exception occured in start_fusion()")
 
 def start_workstation():
-    pass
+    '''
+    Function sends start vmware.exe command to Windows
+    via subprocess.call().
+    TODO: use check_call and check_output
+    
+    WARNING: Function uses shell=True argument due
+    to Windows commmand processing compatibility with
+    VMWare Workstation.
+    '''
+    try:
+        cmd = r"c:\Program Files (x86)\VMware\VMware Workstation\vmware.exe"
+        logger.debug("Sending following command to shell: %s" % (cmd))
+        Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
+        logger.info("VMWare Workstation Started %s" % (cmd))
+    except:
+        logger.debug("Exception occured in start_workstation()")
+        logger.info("Problem starting VMWare Workstation. Is it installed?")
+
+def import_network_settings(config_file, location):
+    '''
+    Function sends start vnetlib.exe command to Windows
+    via subprocess.call(). It "Attempts" to import
+    network settings. The word attempt is used as
+    results have been mixed, even with shell=True.
+    
+    WARNING: Function uses shell=True argument due
+    to Windows commmand processing compatibility with
+    VMWare Workstation.
+    '''
+    try:
+        cmd = r"c:\Program Files (x86)\VMware\VMware Workstation\vnetlib.exe -- import "
+        logger.debug("Sending following command to shell: %s" % (cmd))
+        netcfg = getuser() + os.sep + config_file
+        Popen(cmd + , shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
+        logger.info("VMWare Workstation Started %s" % (cmd))
+    except:
+        logger.debug("Exception occured in start_workstation()")
+        logger.info("Problem starting VMWare Workstation. Is it installed?")
 
 
 # TODO: Migrate vmware_dir_macos to conf file for portability. 
@@ -264,28 +284,46 @@ def get_vmx(url, filename):
     '''
     This function retrieves vmx from resource github.
     Calls the move_vmx() function to replace vmx file.
+    TODO: Format PEP8
+    TODO: Unit Testing and Valdiation
     '''
     try:
         if system() == "Darwin":
+            print("{:-^30s}".format("Automatically Configurating vmnets."))
+            print("\n")
+            print("Getting preconfigured vmx file.")
+            logger.debug(url)
+            logger.debug(filename)
             save(url, getuser() + os.sep + filename)
-            logger.info("Success: got the file from URL.")
+            logger.info("Success: got the file from URL: %s" % (url))
+            print("Success: got the file from URL: %s" % (url))
             copy(findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak")
             logger.info("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak"))
+            print("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak"))
             copy(getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos))
             logger.info("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos)))
+            print("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos)))
             logger.debug("Success, replaced local vmx with master vmx.")
-            logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
-            os.remove(getuser() + os.sep + filename)
-        elif system == "Windows":
+            #logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
+            #os.remove(getuser() + os.sep + filename)
+        elif system() == "Windows":
+            print("{:-^30s}".format("Automatically Configurating vmnets."))
+            print("\n")
+            print("Getting preconfigured vmx file.")
+            logger.debug(url)
+            logger.debug(filename)
             save(url, getuser() + os.sep + filename)
-            logger.info("Success: got the file from URL.")
+            logger.info("Success: got the file from URL: %s" % (url))
+            print("Success: got the file from URL: %s" % (url))
             copy(findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak")
             logger.info("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak"))
+            print("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak"))
             copy(getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows))
             logger.info("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows)))
+            print("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows)))
             logger.debug("Success, replaced local vmx with master vmx.")
-            logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
-            os.remove(getuser() + os.sep + filename)
+            #logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
+            #os.remove(getuser() + os.sep + filename)
         else:
             logger.info("Operating System not recognized.")
     except:
@@ -315,6 +353,7 @@ def getvminfo(url, filename):
             logger.debug("Saved %s as %s" % (url, filename))
             vminfo = json.loads(open(filename).read())
             return vminfo
+        
     except:
         logger.debug("Exception occured in getvminfo().")
 
@@ -380,112 +419,155 @@ def dir_build():
         logger.debug("An IOError has occured as %s" % e)
         
 def unpackova(filename, location):
+    '''
+    Unpacks OVA with OVFTool. Looks for OVFTool in
+    the default installed directory of Windows and
+    MacOS. 
+    TODO: Remove HardCoding of App location.
+    
+    Expects full location of file and unpack directory.
+
+    For Windows, uses "/" intead of os.sep for compatibility
+    with ovftool.exe. This seems to be isolated to
+    ovftool.exe and vmrun.exe.
+    '''
     try:
         logger.debug("Started ova upack at %s"
                      % str(timestamp()))
-        call(["/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool",
-              filename, location])
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool",
+                filename, location])
+        elif system() == "Windows":
+            builddir = os.path.normpath("\"" + getuser() + os.sep +  vmware_dir_windows + "\"")
+            unpackbuilder = os.path.normpath("\"" + filename + "\"")
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\OVFTool\ovftool.exe\"")
+            cmdtrue = (cmd + " " + unpackbuilder + " " + builddir)
+            logger.debug("Started ova upack at %s"
+                        % str(timestamp()))
+            logger.debug("Sent following command to shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+            logger.debug("Completed ova unpack at %s"
+                        % str(timestamp()))
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()    
         logger.debug("Completed ova unpack at %s"
                      % str(timestamp()))
     except:
-        logger.debug("Exception occured in unpackova().")
-        
-def unpackovawin(filename):
-    home = getuser()
-    basedir = "/Documents/Virtual Machines/IT-Managed-VMs"
-    builddir = os.path.normpath("\"" + home + basedir + "\"")
-    unpackbuilder = os.path.normpath("\"" + home + basedir + "/" + filename + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\OVFTool\ovftool.exe\"")
-    cmdtrue = (cmd + " " + unpackbuilder + " " + builddir)
-    call(cmdtrue, shell=True)
+        logger.debug("Exception occured in unpackova().")  
 
 def startvm(vmx):
     '''
-    Starts a virtual machine in VMWare Fusion.
+    Starts a virtual machine on Windows or MacOS.
     Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    TODO: Remove hardcoded path to vmrun.
     '''
     try:
-        call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","start",
-              vmx])
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","start",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "start" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
         logger.debug("Succesfully started %s" % (vmx))
     except IOError as e:
         logger.debug("IOError as %s" % (e))
-        
+
 def deletevm(vmx):
     '''
-    Deletes a virtual machine in VMWare Fusion.
+    Deletes a virtual machine on Windows or MacOS.
     Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    TODO: Remove hardcoded path to vmrun.
     '''
     try:
-        call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","deleteVM",
-              vmx])
-    except:
-        logger.debug("Exception occured in deletevm().")
-
-def suspendvm(vmx):
-    '''
-    Suspends a virtual machine in VMWare Fusion.
-    Expects a full path for vmx variable.
-    '''
-    try:
-        call(["/Applications/VMware Fusion.app/Contents/Library/vmrun",
-              "suspend", vmx])
-        logger.debug("Successfully suspended %s" % (vmx))
-    except IOError as e:
-        logger.debug("IOError as %s" (e))
-
-def stopvm(vmx):
-    '''
-    Stops a virtual machine in VMWare Fusion.
-    Expects a full path for vmx variable.
-    '''
-    try:
-        call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","stop",vmx])
-        logger.debug("Successfully stopped %s " % (vmx))
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","deleteVM",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "deleteVM" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
+        logger.debug("Succesfully deleted %s" % (vmx))
     except IOError as e:
         logger.debug("IOError as %s" % (e))
 
-def startvmwin(vmx):
+def suspendvm(vmx):
+    '''
+    Suspends a virtual machine on Windows or MacOS.
+    Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    TODO: Remove hardcoded path to vmrun.
+    '''
     try:
-        cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
-        cmdtrue = os.path.normpath(cmd +
-                                   " " + "-T" + " " + "ws" +
-                                   " " + "start" + " " + vmx)
-        call(cmdtrue, shell=True)
-    except:
-        logger.debug("An exception occured in startvmwin()")
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","suspend",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "suspend" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
+        logger.debug("Succesfully deleted %s" % (vmx))
+    except IOError as e:
+        logger.debug("IOError as %s" % (e))
 
-def deletevmwin(vmx):
+def stopvm(vmx):
+    '''
+    Stops a virtual machine on Windows or MacOS.
+    Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    TODO: Remove hardcoded path to vmrun.
+    '''
     try:
-        cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
-        cmdtrue = os.path.normpath(cmd +
-                                   " " + "-T" + " " + "ws"
-                                   + " " + "deleteVM" + " " + vmx)
-        call(cmdtrue, shell=True)
-    except:
-        logger.debug("An exception occured in deletevmwin()")
-
-def suspendvmwin(vmx):
-    try:
-        cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
-        cmdtrue = os.path.normpath(cmd +
-                                   " " + "-T" + " " + "ws"
-                                   + " " + "suspend" + " " + vmx)
-        call(cmdtrue, shell=True)
-    except:
-        logger.debug("An exception occured in suspendvmwin()")
-
-def stopvmwin(vmx):
-    try:
-        cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware VIX\\vmrun.exe\"")
-        cmdtrue = os.path.normpath(cmd +
-                                   " " + "-T" + " " + "ws"
-                                   + " " + "stop" + " " + vmx)
-        call(cmdtrue, shell=True)
-    except:
-        logger.debug("An exception occured in stopvmwin()")
-
-#TODO: Remove system dependencies. Cross Platform.
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","stop",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "stop" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
+        logger.debug("Succesfully deleted %s" % (vmx))
+    except IOError as e:
+        logger.debug("IOError as %s" % (e))
 
 #TODO: Build OVF detector.
 
@@ -496,25 +578,145 @@ def integrity_checker():
     '''
     pass
 
+def IT_artifact_creator():
+    '''
+    Function creates are appends to installer log file
+    for IT to read
+    '''
+    if system() == "Darwin":
+        if os.path.exists():
+            pass
+        else:
+            pass
+    elif system() == "Windows":
+        if os.path.exists(IT_SCCM_dir + os.sep + IT_artifact_file):
+            try:
+                time_stamp = timestamp()
+                f = open(IT_SCCM_dir + os.sep + IT_artifact_file, "a+")
+                f.write(time_stamp + " - LiaB Install Complete.")
+                f.close()
+            except:
+                logger.debug("Exception occured in Windows IT_Artifact_creator() a+")
+                exit()
+        else:
+            try:
+                time_stamp = timestamp()
+                f = open(IT_SCCM_dir + os.sep + IT_artifact_file, "w+")
+                f.write(time_stamp + " - LiaB Install Complete.")
+                f.close()
+            except:
+                logger.debug("Exception occured in Windows IT_Artifact_creator() w+")
+                exit()
+    else:
+        logger.info("Unsupported OS detected, process will exit.")
+        exit()
+
+def network_loader():
+    '''
+    Loads network settings for SE Virtual Environment.
+    TODO: Cleanup functions, remove installer files.
+    ''' 
+    try:
+        if system() == "Darwin":
+            logger.info("Going to get network loader script. %s" % (fusion_url))
+            save(fusion_url, getuser() + os.sep + fusion_loader)
+            print("{:-^30s}".format("Automatically Configuring Network."))
+            print("{:-^30s}".format("Please enter SSO password."))
+            call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
+        elif system() == "Windows":
+            print("VMware Workstation import process is in the GUI.")
+            print("Getting defaultse config file now.")
+            print("Please import it in Virtual Networks Editor.")
+            print("Saving %s to: %s " % (workstation_url, getuser() + os.sep + vmware_dir_windows))
+            logger.info("Windows vnetlib.exe uses an odd -- switch.")
+            logger.info("Getting the config file, you will need to manually import.")
+            logger.info("Saving %s to: %s " % (workstation_url, getuser() + os.sep + vmware_dir_windows))
+            save(workstation_url, getuser() + os.sep + vmware_dir_windows + os.sep + workstationcfgfile)
+            print("\nOpening instructions in 5 seconds.")
+            time.sleep(5)
+            webbrowser.get(chrome_path_win).open(win_install_url)
+        else:
+            print("Unsupported OS detected, program will exit.")
+            logger.info("Unsupported OS. Now exiting.")
+            exit()
+    except:
+        logger.debug("Exception occured in network_loader() os type: %s" % (system()))
+
+def pan_license():
+    '''
+    Licenses VM-Series.
+    TODO: Cleanup functions, remove installer files.
+    ''' 
+    try:
+        if system() == "Darwin":
+            logger.info("Starting licensing process.")
+            print("{:-^30s}".format("Starting Licensing Process."))
+            print("{:-^30s}".format("It can take VM-Series 7 MIN to boot."))
+            print("{:-^30s}".format("Please be patient."))
+            call([python_mac, findfile(pan_license_filename, getuser())])
+        elif system() == "Windows":
+            logger.info("Starting licensing process.")
+            cmd = os.path.normpath("\"c:\Program Files (x86)\Python37-32\python.exe\"")
+            print("{:-^30s}".format("Starting Licensing Process."))
+            print("{:-^30s}".format("It can take VM-Series 7 MIN to boot."))
+            print("{:-^30s}".format("Please be patient."))
+            license_file = findfile(pan_license_filename, getuser())
+            cmdtrue = os.path.normpath(cmd + os.path.normpath("\"%s\"" % (license_file)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS detected, program will exit.")
+            logger.info("Unsupported OS. Now exiting.")
+            exit()
+    except:
+        logger.debug("Exception occured in network_loader() os type: %s" % (system()))
+
+def file_checker():
+    '''
+    File audit check for Lab in a Box Install.
+    This function will search for nessesary files
+    and if they are not present, will exit the install
+    with instructions to remediate.
+    '''
+    pass
+
 def main():
     oscheck = system()
-    vminfo = getvminfo(vminfo_url, vminfo_filename)
     try:
+        vminfo = getvminfo(vminfo_url, vminfo_filename)
+        network_loader()
+        if findfile(pan_license_filename, getuser()):
+            logger.info("Located license installer.")
+            print("Located pan-license-vmseries.py.")
+            pass
+        else:
+            logger.info("License installer not located. Exiting.")
+            print("License installer file not located, intaller will exit.")
+            print("Opening location to installer file. Please download and restart install.")
+            if system() == "Darwin":
+                webbrowser.get(chrome_path).open(pan_license)
+            elif system() == "Windows":
+                webbrowser.get(chrome_path_win).open(pan_license)
+            exit()
         for each in vminfo:
             if findova(vminfo.get(each).get('ova')):
                 print("\n")
-                print("{:-^30s}".format("Searching...."))
+                print("{:-^30s}".format("Searching"))
                 logger.debug("File located: %s" % (vminfo.get(each).get('ova')))
                 print("SUCCESS: File %s Located." % (vminfo.get(each).get('ova')))
+                print("{:-^30s}".format("Searching"))
+                print("\n")
+                print("{:-^30s}".format("Performing SHA1 Check"))
                 local_sha = sha1sum(findova(vminfo.get(each).get('ova')))
-                print("SHA: %s" % (local_sha))
-                print("{:-^30s}".format("Checking Integrity...."))
+                print("Local SHA1 Summary: %s" % (local_sha))
+                print("{:-^30s}".format("Comparing HASH"))
                 if check_sha1sum(vminfo.get(each).get('sha1sum'), local_sha) == True:
                     print("Integrity Check Successful.")
-                    print("{:-^30s}".format("Check Complete...."))
+                    print("{:-^30s}".format("SHA1 Check Complete"))
+                    print("\n")
                     logger.info("Integrity Check Successful.")
                 else:
-                    print("Integrity Check Fail. Consider re-downloading.")
+                    print("SHA1 Check shows different HASH. OVA may not be current. Consider re-downloading.")
                     if oscheck == "Darwin":
                         webbrowser.get(chrome_path).open(vminfo.get(each).get('sourceurl'))
                         logger.debug("Opened Browser to SourceURL for %s" % (vminfo.get(each).get('name')))
@@ -524,9 +726,10 @@ def main():
                     else:
                         logger.debug("Tried to open browser to SourceURL."
                                      + " Unsupported OS detected")
-                    print("{:-^30s}".format("Check Complete...."))
+                    print("{:-^30s}".format("SHA1 Check Complete"))
+                    print("\n")
                     logger.info("Integrity Check Fail. Re-download suggested.")
-                print("{:-^30s}".format("Unpacking....%s" % (vminfo.get(each).get('ova'))))
+                print("{:-^30s}".format("Unpacking %s" % (vminfo.get(each).get('ova'))))
                 logger.debug("{:-^30s}".format("Unpacking %s" % (vminfo.get(each).get('ova'))))
                 print("This will take some time.")
                 try:
@@ -537,14 +740,19 @@ def main():
                                         getuser() + os.sep + vmware_dir_macos)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
-                                stop_fusion()
-                                if vminfo.get(each).get('name') == "pan-panos-vm50":
-                                    get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                elif vminfo.get(each).get('name') == "oss-setools-linux":
-                                    get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                else:
-                                    pass
-                                start_fusion()
+                                try:
+                                    if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                        stop_fusion()
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        start_fusion()
+                                    elif vminfo.get(each).get('name') == "oss-setools-linux":
+                                        stop_fusion()
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        start_fusion()
+                                    else:
+                                        pass
+                                except:
+                                    logger.info("Exception occured in vmx replacement.")
                         else:
                             dir_build()
                             if vminfo.get(each).get('status') == True:
@@ -552,14 +760,19 @@ def main():
                                         getuser() + os.sep + vmware_dir_macos)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
-                                stop_fusion()
-                                if vminfo.get(each).get('name') == "pan-panos-vm50":
-                                    get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                elif vminfo.get(each).get('name') == "oss-setools-linux":
-                                    get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                else:
-                                    pass
-                                start_fusion()
+                                try:
+                                    if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                        stop_fusion()
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        start_fusion()
+                                    elif vminfo.get(each).get('name') == "oss-setools-linux":
+                                        stop_fusion()
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        start_fusion()
+                                    else:
+                                        pass
+                                except:
+                                    logger.info("Exception occured in vmx replacement.")
                         startvm(findfile(vminfo.get(each).get('vmx'), getuser()
                                          + os.sep + vmware_dir_macos))
                         logger.info("Successfully started %s" %
@@ -570,6 +783,12 @@ def main():
                         logger.info("Successfully stopped %s" %
                                     (findfile(vminfo.get(each).get('vmx'), getuser()
                                               + os.sep + vmware_dir_macos)))
+                        if vminfo.get(each).get('name') == "pan-panos-vm50":
+                            logger.info("Starting Boot process om VM-Series.")
+                            print("{:-^30s}".format("Starting boot of VM-Series...."))
+                            print("{:-^30s}".format("Leave Running...."))
+                            startvm(findfile(vminfo.get(each).get('vmx'), getuser()
+                                         + os.sep + vmware_dir_macos))
                     elif oscheck == "Windows":
                         if dir_check(getuser() + os.sep + vmware_dir_windows):
                             if vminfo.get(each).get('status') == True:
@@ -577,14 +796,35 @@ def main():
                                         getuser() + os.sep + vmware_dir_windows)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
-                                stop_fusion()
-                                if vminfo.get(each).get('name') == "pan-panos-vm50":
-                                    get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                elif vminfo.get(each).get('name') == "oss-setools-linux":
-                                    get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                else:
-                                    pass
-                                start_fusion()
+                                try:
+                                    if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                        stop_workstation()
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    elif vminfo.get(each).get('name') == "oss-setools-linux":
+                                        stop_workstation()
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    else:
+                                        pass
+                                except:
+                                    logger.info("Exception occured in vmx replacement.")
+                            startvm(findfile(vminfo.get(each).get('vmx'), getuser()
+                                            + os.sep + vmware_dir_windows))
+                            logger.info("Successfully started %s" %
+                                        (findfile(vminfo.get(each).get('vmx'), getuser()
+                                                + os.sep + vmware_dir_windows)))
+                            stopvm(findfile(vminfo.get(each).get('vmx'), getuser()
+                                            + os.sep + vmware_dir_windows))
+                            logger.info("Successfully stopped %s" %
+                                        (findfile(vminfo.get(each).get('vmx'), getuser()
+                                                + os.sep + vmware_dir_windows)))
+                            if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                logger.info("Starting Boot process om VM-Series.")
+                                print("{:-^30s}".format("Starting boot of VM-Series...."))
+                                print("{:-^30s}".format("Leave Running...."))
+                                startvm(findfile(vminfo.get(each).get('vmx'), getuser()
+                                            + os.sep + vmware_dir_windows))
                         else:
                             dir_build()
                             if vminfo.get(each).get('status') == True:
@@ -592,14 +832,35 @@ def main():
                                         getuser() + os.sep + vmware_dir_windows)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
-                                stop_fusion()
-                                if vminfo.get(each).get('name') == "pan-panos-vm50":
-                                    get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                elif vminfo.get(each).get('name') == "oss-setools-linux":
-                                    get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                else:
-                                    pass
-                                start_fusion()
+                                try:
+                                    if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                        stop_workstation()
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    elif vminfo.get(each).get('name') == "oss-setools-linux":
+                                        stop_workstation()
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    else:
+                                        pass
+                                except:
+                                    logger.info("Exception occured in vmx replacement.")
+                            startvm(findfile(vminfo.get(each).get('vmx'), "\"%s\"" % (getuser()
+                                            + os.sep + vmware_dir_windows)))
+                            logger.info("Successfully started %s" %
+                                        (findfile(vminfo.get(each).get('vmx'), getuser()
+                                                + os.sep + vmware_dir_windows)))
+                            stopvm(findfile(vminfo.get(each).get('vmx'), "\"%s\"" % (getuser()
+                                            + os.sep + vmware_dir_windows)))
+                            logger.info("Successfully stopped %s" %
+                                        (findfile(vminfo.get(each).get('vmx'), getuser()
+                                                + os.sep + vmware_dir_windows)))
+                            if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                logger.info("Starting Boot process om VM-Series.")
+                                print("{:-^30s}".format("Starting boot of VM-Series"))
+                                print("{:-^30s}".format("Leave VM-Series Running until Licensing Complete"))
+                                startvm(findfile(vminfo.get(each).get('vmx'), "\"%s\"" % (getuser()
+                                            + os.sep + vmware_dir_windows)))
                     else:
                         logger.info("Unsupported OS Detected, install will halt.")
                         exit()
@@ -608,15 +869,27 @@ def main():
                     print("Error in the unpack process.")
             else:
                 print("\n")
-                print("{:-^30s}".format("File Check"))
-                print("File %s has not been downloaded." % (each))
-                print("Opening a Chrome Browser window now.")
-                logger.debug("File not found, opened browser to %s" % 
-                            vminfo.get(each).get('sourceurl'))
-                webbrowser.get(chrome_path).open(vminfo.get(each).get('sourceurl'))
-                print("For support joing #labinabox on Slack.")
-                print("{:-^30s}".format("File Check"))
+                print("{:-^30s}".format("Download Check Failed"))
+                print("{:-^30s}".format("Opening URL to Install Instructions"))
+                print("{:-^30s}".format("Could not find: %s" % (vminfo.get(each).get('ova'))))
+                logger.info("Download Check Failed. Opening install instructions and LiaB gDrive Folder.")
+                print("{:-^30s}".format("Opening URL to Install Instructions"))
+                if oscheck == "Darwin":
+                    webbrowser.get(chrome_path).open(macos_install_url)
+                    webbrowser.get(chrome_path).open(liab_gdrive)
+                    logger.debug("Opened Browser to SourceURL for %s" % (macos_install_url))
+                elif oscheck == "Windows":
+                    webbrowser.get(chrome_path_win).open(win_install_url)
+                    webbrowser.get(chrome_path_win).open(liab_gdrive)
+                    logger.debug("Opened Browser to SourceURL for %s" % (win_install_url))
+                else:
+                    logger.debug("Tried to open browser to SourceURL."
+                                    + " Unsupported OS detected")
                 print("\n")
+                print("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
+                logger.info("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
+                exit()
+        pan_license()
     except:
         print ("\n")
         print("{:-^30s}".format("ERROR"))
