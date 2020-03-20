@@ -661,7 +661,7 @@ def pan_license():
             print("{:-^30s}".format("It can take VM-Series 7 MIN to boot."))
             print("{:-^30s}".format("Please be patient."))
             license_file = findfile(pan_license_filename, getuser())
-            cmdtrue = os.path.normpath(cmd + os.path.normpath("\"%s\"" % (license_file)))
+            cmdtrue = os.path.normpath(cmd + " " + os.path.normpath("\"%s\"" % (license_file)))
             logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
             call(cmdtrue, shell=True)
         else:
