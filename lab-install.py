@@ -128,6 +128,7 @@ pan_license_filename = "pan-license-vmseries.py"
 vminfo_sha = "ec0b337767bf4d5e98404e71a389e300ecd017c8"
 panos_vmx_hash = "559fbc57ef121eb88076e821454371e100e59061"
 se_tools_vmx_hash = "28b694dfa0fd6ca75b466c14574e3b16cb8af8b6"
+pan_license_hash = "18b5e1b917d3e573dba7db078b126b40a6ca442d"
 
 # Functions
 
@@ -377,6 +378,21 @@ def findfile(filename, searchdir):
     for base, dirs, files, in os.walk(searchdir):
         if filename in files:
             return os.path.join(base, filename)
+
+def find_license_file(filename, searchdir):
+    '''
+    Function searches user directory for
+    pan-license-vmseries.py.
+    It compares to the file HASH.
+    
+    It returns location/file. 
+    
+    Uses os.walk for compatibility.
+    '''
+    for base, dirs, files, in os.walk(searchdir):
+        if filename in files:
+            if check_sha1sum(pan_license_hash, sha1sum(os.path.join(base, filename))) == True:
+                return os.path.join(base, filename)
         
 # TODO: Update with pathlib.Path.rglob after moving to 3.X        
 
@@ -686,13 +702,13 @@ def main():
     try:
         vminfo = getvminfo(vminfo_url, vminfo_filename)
         network_loader()
-        if findfile(pan_license_filename, getuser()):
-            logger.info("Located license installer.")
-            print("Located pan-license-vmseries.py.")
+        if find_license_file(pan_license_filename, getuser()):
+            logger.info("Located current license installer.")
+            print("Located current pan-license-vmseries.py.")
             pass
         else:
             logger.info("License installer not located. Exiting.")
-            print("License installer file not located, intaller will exit.")
+            print("Current license installer file not located, intaller will exit.")
             print("Opening location to installer file. Please download and restart install.")
             if system() == "Darwin":
                 webbrowser.get(chrome_path).open(pan_license)
