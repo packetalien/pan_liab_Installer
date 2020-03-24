@@ -91,6 +91,7 @@ setools_vmx = "https://raw.githubusercontent.com/packetalien/diabresources/maste
 vminfo_url = "https://raw.githubusercontent.com/packetalien/diabresources/master/db/vminfo.json"
 fusion_url = "https://raw.githubusercontent.com/packetalien/fusion-network-config/master/vmnet-configure.py"
 win_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36656"
+win_network_url = "https://loop.paloaltonetworks.com/docs/DOC-36685"
 macos_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36686"
 workstation_url = "https://github.com/packetalien/diabresources/blob/master/db/defaultse?raw=true"
 pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZHyX2AQ"
@@ -634,7 +635,7 @@ def network_loader():
             save(workstation_url, getuser() + os.sep + vmware_dir_windows + os.sep + workstationcfgfile)
             print("\nOpening instructions in 5 seconds.")
             time.sleep(5)
-            webbrowser.get(chrome_path_win).open(win_install_url)
+            webbrowser.get(chrome_path_win).open(win_network_url)
         else:
             print("Unsupported OS detected, program will exit.")
             logger.info("Unsupported OS. Now exiting.")
