@@ -708,8 +708,10 @@ def main():
             pass
         else:
             logger.info("License installer not located. Exiting.")
+            print("{:-^40s}".format("pan-license-vmseries.py ERROR"))
             print("Current license installer file not located, intaller will exit.")
             print("Opening location to installer file. Please download and restart install.")
+            print("{:-^40s}".format("pan-license-vmseries.py ERROR"))
             if system() == "Darwin":
                 webbrowser.get(chrome_path).open(pan_license)
             elif system() == "Windows":
