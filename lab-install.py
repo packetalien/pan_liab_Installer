@@ -128,7 +128,7 @@ pan_license_filename = "pan-license-vmseries.py"
 vminfo_sha = "ec0b337767bf4d5e98404e71a389e300ecd017c8"
 panos_vmx_hash = "559fbc57ef121eb88076e821454371e100e59061"
 se_tools_vmx_hash = "28b694dfa0fd6ca75b466c14574e3b16cb8af8b6"
-pan_license_hash = "18b5e1b917d3e573dba7db078b126b40a6ca442d"
+pan_license_hash = "2339a5286a78a08cf4d02de13767c894886244cb"
 
 # Functions
 
