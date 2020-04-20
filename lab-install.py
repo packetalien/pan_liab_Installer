@@ -125,7 +125,7 @@ IT_artifact_file = "liab-installed.txt"
 pan_license_filename = "pan-license-vmseries.py"
 
 # Hard Coded hashes, TODO: Move to conf file.
-vminfo_sha = "714fd250af0c9d68fc7936f6f43fadbd892c65d4"
+vminfo_sha = "73a20cd28e046795734ecf3325659ef65da3d6c8"
 panos_vmx_hash = "559fbc57ef121eb88076e821454371e100e59061"
 se_tools_vmx_hash = "28b694dfa0fd6ca75b466c14574e3b16cb8af8b6"
 pan_license_hash = "2339a5286a78a08cf4d02de13767c894886244cb"
