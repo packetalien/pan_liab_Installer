@@ -1,0 +1,52 @@
+{
+    
+    "urls": {
+        "panos_vmx" : "https://raw.githubusercontent.com/packetalien/diabresources/master/vmx/pan-panos-vm50.vmx",
+        "setools_vmx" : "https://raw.githubusercontent.com/packetalien/diabresources/master/vmx/oss-setools-linux.vmx",
+        "vminfo_url" : "https://raw.githubusercontent.com/packetalien/diabresources/master/db/vminfo.json",
+        "fusion_url" : "https://raw.githubusercontent.com/packetalien/fusion-network-config/master/vmnet-configure.py",
+        "win_install_url" : "https://loop.paloaltonetworks.com/docs/DOC-36656",
+        "win_network_url" : "https://loop.paloaltonetworks.com/docs/DOC-36685",
+        "macos_install_url" : "https://loop.paloaltonetworks.com/docs/DOC-36686",
+        "workstation_url" : "https://github.com/packetalien/diabresources/blob/master/db/defaultse?raw:true",
+        "pan_license_url" : "https://drive.google.com/open?id:1JcyZgitSsGY0JCTXoUJPAJRweZHyX2AQ",
+        "liab_gdrive" : "https://drive.google.com/drive/u/0/folders/1SOzlP7Jq5v9y5Hb7uOSWMHVoNz5p75AE"
+    },
+
+    "directories" : {
+        "vmware_dir_windows" : "Documents\\Virtual Machines",
+        "vmware_dir_macos" : "Virtual\\ Machines.localized",
+        "IT_SCCM_dir" : "C:\\ProgramData",
+        "legacy_dir" : "IT-Managed-VMs"
+    },
+
+    "applications":{
+        "chrome_path" : "open -a /Applications/Google\\ Chrome.app %s",
+        "chrome_path_win" : "'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'",
+        "vnetlib_windows" : "r\"c:\\Program Files (x86)\\VMware\\VMware Workstation\\vnetlib64.exe\"",
+        "python_mac" : "/usr/bin/python"
+    },
+
+    "filenames": {
+        "vmnetfile" : "fusion-vmnet-config.txt",
+        "fusion_loader" : "vmnet-configure.py",
+        "workstationcfgfile" : "defaultse",
+        "vminfo_filename" : "vminfo.json",
+        "panos_vmx_filename" : "pan-vm50.vmx",
+        "setools_vmx_filename" : "linux-utility.vmx",
+        "msft_dc_vmx" : "msft-dc.vmx",
+        "msft_rodc_vmx" : "msft-rodc.vmx",
+        "IT_artifact_file" : "liab-installed.txt",
+        "pan_license_filename" : "pan-license-vmseries.py"
+
+    },
+
+    "hash" : {
+        "vminfo_sha" : "73a20cd28e046795734ecf3325659ef65da3d6c8",
+        "panos_vmx_hash" : "c9ba0075a9469611aa231f96433a90a62ab5af47",
+        "se_tools_vmx_hash" : "75c7e8a038b73c316dd55f69ac91aadd40251662",
+        "pan_license_hash" : "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21",
+        "msft_dc_vmx_hash" : "da81e84a956fbee76132640fdd8b9d58a9be0cca",
+        "msft_rodct_vmx_hash" : "4f8a858be733b90751a5e155ed34591ad121371e"
+    }
+}
