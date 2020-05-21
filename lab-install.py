@@ -137,7 +137,7 @@ panos_vmx_hash = "e37b2c76c84a3eee1b2564d957d443c5bac5d8f7"
 se_tools_vmx_hash = "75c7e8a038b73c316dd55f69ac91aadd40251662"
 msft_dc_hash = "da81e84a956fbee76132640fdd8b9d58a9be0cca"
 msft_rodc_hash = "4f8a858be733b90751a5e155ed34591ad121371e"
-pan_license_hash = "18b5e1b917d3e573dba7db078b126b40a6ca442d"
+pan_license_hash = "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21"
 
 # Functions
 
