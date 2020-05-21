@@ -28,7 +28,7 @@ Use at your own risk.
 
 __author__ = "Richard Porter (@packetalien)"
 __copyright__ = "Copyright 2018, Palo Alto Networks"
-__version__ = "1.3"
+__version__ = "1.4"
 __license__ = "MIT"
 __status__ = "Beta"
 
@@ -87,9 +87,11 @@ logger.setLevel("DEBUG")
 # TODO: Move local variables to a conf file in 3.0
 # URLS
 
-panos_vmx = "https://raw.githubusercontent.com/packetalien/diabresources/master/vmx/pan-panos-vm50.vmx"
-setools_vmx = "https://raw.githubusercontent.com/packetalien/diabresources/master/vmx/oss-setools-linux.vmx"
-vminfo_url = "https://raw.githubusercontent.com/packetalien/diabresources/master/db/vminfo.json"
+panos_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/pan-vm50.vmx"
+setools_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/linux-utility.vmx"
+msft_dc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/msft-dc.vmx"
+msft_rodc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/msft-rodc.vmx"
+vminfo_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/vminfo.json"
 fusion_url = "https://raw.githubusercontent.com/packetalien/fusion-network-config/master/vmnet-configure.py"
 win_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36656"
 win_network_url = "https://loop.paloaltonetworks.com/docs/DOC-36685"
@@ -130,9 +132,11 @@ pan_license_filename = "pan-license-vmseries.py"
 config_filename = "config.json"
 
 # Hard Coded hashes, TODO: Move to conf file.
-vminfo_sha = "73a20cd28e046795734ecf3325659ef65da3d6c8"
-panos_vmx_hash = "559fbc57ef121eb88076e821454371e100e59061"
-se_tools_vmx_hash = "28b694dfa0fd6ca75b466c14574e3b16cb8af8b6"
+vminfo_sha = "9371858d5d7ea84c0b0ef944e3871135e7d8a482"
+panos_vmx_hash = "e37b2c76c84a3eee1b2564d957d443c5bac5d8f7"
+se_tools_vmx_hash = "75c7e8a038b73c316dd55f69ac91aadd40251662"
+msft_dc_hash = "da81e84a956fbee76132640fdd8b9d58a9be0cca"
+msft_rodc_hash = "4f8a858be733b90751a5e155ed34591ad121371e"
 pan_license_hash = "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21"
 
 # Functions
@@ -637,6 +641,7 @@ def network_loader():
     '''
     Loads network settings for SE Virtual Environment.
     TODO: Cleanup functions, remove installer files.
+    TODO: Validate if Network is already configured.
     ''' 
     try:
         if system() == "Darwin":
@@ -822,13 +827,21 @@ def main():
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
                                 try:
-                                    if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                    if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_fusion()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
                                         start_fusion()
-                                    elif vminfo.get(each).get('name') == "oss-setools-linux":
+                                    elif vminfo.get(each).get('name') == "linux-utility":
                                         stop_fusion()
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        start_fusion()
+                                    elif vminfo.get(each).get('name') == "msft-dc":
+                                        stop_fusion()
+                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
+                                        start_fusion()
+                                    elif vminfo.get(each).get('name') == "msft-rodc":
+                                        stop_fusion()
+                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
                                         start_fusion()
                                     else:
                                         pass
@@ -844,7 +857,7 @@ def main():
                         logger.info("Successfully stopped %s" %
                                     (findfile(vminfo.get(each).get('vmx'), getuser()
                                               + os.sep + vmware_dir_macos)))
-                        if vminfo.get(each).get('name') == "pan-panos-vm50":
+                        if vminfo.get(each).get('name') == "pan-vm50":
                             logger.info("Starting Boot process om VM-Series.")
                             print("{:-^30s}".format("Starting boot of VM-Series...."))
                             print("{:-^30s}".format("Leave Running...."))
@@ -858,13 +871,21 @@ def main():
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
                                 try:
-                                    if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                    if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
                                         start_workstation()
-                                    elif vminfo.get(each).get('name') == "oss-setools-linux":
+                                    elif vminfo.get(each).get('name') == "linux-utility":
                                         stop_workstation()
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    elif vminfo.get(each).get('name') == "msft-dc":
+                                        stop_workstation()
+                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    elif vminfo.get(each).get('name') == "msft-rodc":
+                                        stop_workstation()
+                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
                                         start_workstation()
                                     else:
                                         pass
@@ -880,7 +901,7 @@ def main():
                             logger.info("Successfully stopped %s" %
                                         (findfile(vminfo.get(each).get('vmx'), getuser()
                                                 + os.sep + vmware_dir_windows)))
-                            if vminfo.get(each).get('name') == "pan-panos-vm50":
+                            if vminfo.get(each).get('name') == "pan-vm50":
                                 logger.info("Starting Boot process om VM-Series.")
                                 print("{:-^30s}".format("Starting boot of VM-Series...."))
                                 print("{:-^30s}".format("Leave Running...."))
@@ -894,13 +915,21 @@ def main():
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
                                 try:
-                                    if vminfo.get(each).get('name') == "pan-panos-vm50":
+                                    if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
                                         start_workstation()
-                                    elif vminfo.get(each).get('name') == "oss-setools-linux":
+                                    elif vminfo.get(each).get('name') == "linux-utility":
                                         stop_workstation()
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    elif vminfo.get(each).get('name') == "msft-dc":
+                                        stop_workstation()
+                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
+                                        start_workstation()
+                                    elif vminfo.get(each).get('name') == "msft-rodc":
+                                        stop_workstation()
+                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
                                         start_workstation()
                                     else:
                                         pass
@@ -916,7 +945,7 @@ def main():
                             logger.info("Successfully stopped %s" %
                                         (findfile(vminfo.get(each).get('vmx'), getuser()
                                                 + os.sep + vmware_dir_windows)))
-                            if vminfo.get(each).get('name') == "pan-panos-vm50":
+                            if vminfo.get(each).get('name') == "pan-vm50":
                                 logger.info("Starting Boot process om VM-Series.")
                                 print("{:-^30s}".format("Starting boot of VM-Series"))
                                 print("{:-^30s}".format("Leave VM-Series Running until Licensing Complete"))
