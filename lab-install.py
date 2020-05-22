@@ -44,7 +44,6 @@ import webbrowser
 import shutil
 import json
 import glob
-import configparser
 from time import strftime
 from platform import system
 from subprocess import call
@@ -129,7 +128,6 @@ msft_dc_filename = "msft-dc.vmx"
 msft_rodc_filename = "msft-rodc.vmx"
 IT_artifact_file = "liab-installed.txt"
 pan_license_filename = "pan-license-vmseries.py"
-config_filename = "config.json"
 
 # Hard Coded hashes, TODO: Move to conf file.
 vminfo_sha = "9371858d5d7ea84c0b0ef944e3871135e7d8a482"
@@ -708,34 +706,6 @@ def file_checker():
     with instructions to remediate.
     '''
     pass
-
-def config_loader(url, filename):
-    '''
-    Retrieves config.json from a url and hash checks with master.
-    '''
-    try:
-        if os.path.exists(filename):
-            if check_sha1sum(vminfo_sha,sha1sum(filename)) == False:
-                logger.info("Virtual Machine data out of date, getting new file now.")
-                save(url, filename)
-                logger.debug("Saved %s as %s" % (url, filename))
-                installer_config = json.loads(open(findfile(filename, os.getcwd())).read())
-                logger.debug("Loaded new file as %s \n" % (installer_config))
-                return installer_config
-            else:
-                logger.debug("Found local file, hash matched remote.")
-                installer_config = json.loads(open(findfile(filename, os.getcwd())).read())
-                logger.debug("Loaded local file as %s \n" % (installer_config))
-                return installer_config
-        else:
-            logger.debug("File not found, going to get it.")
-            save(url, filename)
-            logger.debug("Saved %s as %s" % (url, filename))
-            vminfo = json.loads(open(filename).read())
-            return installer_config
-        
-    except:
-        logger.debug("Exception occured in config_loader().")
 
 def main():
     oscheck = system()
