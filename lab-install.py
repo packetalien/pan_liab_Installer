@@ -847,12 +847,6 @@ def main():
                         logger.info("Successfully stopped %s" %
                                     (findfile(vminfo.get(each).get('vmx'), getuser()
                                               + os.sep + vmware_dir_macos)))
-                        if vminfo.get(each).get('name') == "pan-vm50":
-                            logger.info("Starting Boot process om VM-Series.")
-                            print("{:-^30s}".format("Starting boot of VM-Series...."))
-                            print("{:-^30s}".format("Leave Running...."))
-                            startvm(findfile(vminfo.get(each).get('vmx'), getuser()
-                                         + os.sep + vmware_dir_macos))
                     elif oscheck == "Windows":
                         if dir_check(getuser() + os.sep + vmware_dir_windows):
                             if vminfo.get(each).get('status') == True:
@@ -885,12 +879,6 @@ def main():
                             logger.info("Successfully stopped %s" %
                                         (findfile(vminfo.get(each).get('vmx'), getuser()
                                                 + os.sep + vmware_dir_windows)))
-                            if vminfo.get(each).get('name') == "pan-vm50":
-                                logger.info("Starting Boot process om VM-Series.")
-                                print("{:-^30s}".format("Starting boot of VM-Series...."))
-                                print("{:-^30s}".format("Leave Running...."))
-                                startvm(findfile(vminfo.get(each).get('vmx'), getuser()
-                                            + os.sep + vmware_dir_windows))
                         else:
                             dir_build()
                             if vminfo.get(each).get('status') == True:
@@ -923,12 +911,6 @@ def main():
                             logger.info("Successfully stopped %s" %
                                         (findfile(vminfo.get(each).get('vmx'), getuser()
                                                 + os.sep + vmware_dir_windows)))
-                            if vminfo.get(each).get('name') == "pan-vm50":
-                                logger.info("Starting Boot process om VM-Series.")
-                                print("{:-^30s}".format("Starting boot of VM-Series"))
-                                print("{:-^30s}".format("Leave VM-Series Running until Licensing Complete"))
-                                startvm(findfile(vminfo.get(each).get('vmx'), "\"%s\"" % (getuser()
-                                            + os.sep + vmware_dir_windows)))
                     else:
                         logger.info("Unsupported OS Detected, install will halt.")
                         exit()
