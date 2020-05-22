@@ -711,7 +711,6 @@ def main():
     oscheck = system()
     try:
         vminfo = getvminfo(vminfo_url, vminfo_filename)
-        installer_config = config_loader(config_url, config_filename)
         network_loader()
         if find_license_file(pan_license_filename, getuser()):
             logger.info("Located current license installer.")
