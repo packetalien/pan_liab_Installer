@@ -669,7 +669,7 @@ def network_loader():
     except:
         logger.debug("Exception occured in network_loader() os type: %s" % (system()))
 
-def pan_license():
+def pan_license(vminfo):
     '''
     Licenses VM-Series.
     TODO: Cleanup functions, remove installer files.
@@ -680,6 +680,7 @@ def pan_license():
             print("{:-^30s}".format("Starting Licensing Process."))
             print("{:-^30s}".format("It can take VM-Series 7 MIN to boot."))
             print("{:-^30s}".format("Please be patient."))
+            startvm(findfile(vminfo.get("panvm50").get('vmx'), getuser() + os.sep + vmware_dir_macos))
             call([python_mac, findfile(pan_license_filename, getuser())])
         elif system() == "Windows":
             logger.info("Starting licensing process.")
@@ -687,6 +688,7 @@ def pan_license():
             print("{:-^30s}".format("Starting Licensing Process."))
             print("{:-^30s}".format("It can take VM-Series 7 MIN to boot."))
             print("{:-^30s}".format("Please be patient."))
+            startvm(findfile(vminfo.get("panvm50").get('vmx'), getuser() + os.sep + vmware_dir_windows))
             license_file = findfile(pan_license_filename, getuser())
             cmdtrue = os.path.normpath(cmd + " " + os.path.normpath("\"%s\"" % (license_file)))
             logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
@@ -802,17 +804,11 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_fusion()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        start_fusion()
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        stop_fusion()
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                        start_fusion()
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        stop_fusion()
                                         get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
-                                        start_fusion()
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        stop_fusion()
                                         get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
                                         start_fusion()
                                     else:
@@ -830,17 +826,11 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_fusion()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        start_fusion()
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        stop_fusion()
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                        start_fusion()
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        stop_fusion()
                                         get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
-                                        start_fusion()
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        stop_fusion()
                                         get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
                                         start_fusion()
                                     else:
@@ -874,17 +864,11 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        start_workstation()
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        stop_workstation()
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                        start_workstation()
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        stop_workstation()
                                         get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
-                                        start_workstation()
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        stop_workstation()
                                         get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
                                         start_workstation()
                                     else:
@@ -918,17 +902,11 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        start_workstation()
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        stop_workstation()
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
-                                        start_workstation()
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        stop_workstation()
                                         get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
-                                        start_workstation()
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        stop_workstation()
                                         get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
                                         start_workstation()
                                     else:
@@ -979,7 +957,7 @@ def main():
                 print("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
                 logger.info("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
                 exit()
-        pan_license()
+        pan_license(vminfo)
     except:
         print ("\n")
         print("{:-^30s}".format("ERROR"))
