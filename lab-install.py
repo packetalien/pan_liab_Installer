@@ -125,8 +125,8 @@ workstationcfgfile = "defaultse"
 vminfo_filename = "vminfo.json"
 panos_vmx_filename = "pan-vm50.vmx"
 setools_vmx_filename = "linux-utility.vmx"
-msft_dc_vmx = "msft-dc.vmx"
-msft_rodc_vmx = "msft-rodc.vmx"
+msft_dc_filename = "msft-dc.vmx"
+msft_rodc_filename = "msft-rodc.vmx"
 IT_artifact_file = "liab-installed.txt"
 pan_license_filename = "pan-license-vmseries.py"
 config_filename = "config.json"
@@ -315,8 +315,8 @@ def get_vmx(url, filename):
             logger.info("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos)))
             print("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos)))
             logger.debug("Success, replaced local vmx with master vmx.")
-            #logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
-            #os.remove(getuser() + os.sep + filename)
+            logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
+            os.remove(getuser() + os.sep + filename)
         elif system() == "Windows":
             print("{:-^30s}".format("Automatically Configurating vmnets."))
             print("\n")
@@ -333,8 +333,8 @@ def get_vmx(url, filename):
             logger.info("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows)))
             print("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows)))
             logger.debug("Success, replaced local vmx with master vmx.")
-            #logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
-            #os.remove(getuser() + os.sep + filename)
+            logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
+            os.remove(getuser() + os.sep + filename)
         else:
             logger.info("Operating System not recognized.")
     except:
@@ -481,7 +481,7 @@ def unpackova(filename, location):
         logger.debug("Completed ova unpack at %s"
                      % str(timestamp()))
     except:
-        logger.debug("Exception occured in unpackova().")  
+        logger.debug("Exception occured in unpackova().")
 
 def startvm(vmx):
     '''
