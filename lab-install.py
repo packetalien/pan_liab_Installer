@@ -98,7 +98,7 @@ macos_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36686"
 workstation_url = "https://github.com/packetalien/diabresources/blob/master/db/defaultse?raw=true"
 pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZHyX2AQ"
 liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc2uqicV0ziW4"
-config_url = ""
+config_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/config.json"
 
 # TODO: Move all of this to a CONF file.
 # Default Directories
@@ -135,7 +135,7 @@ panos_vmx_hash = "e37b2c76c84a3eee1b2564d957d443c5bac5d8f7"
 se_tools_vmx_hash = "75c7e8a038b73c316dd55f69ac91aadd40251662"
 msft_dc_hash = "da81e84a956fbee76132640fdd8b9d58a9be0cca"
 msft_rodc_hash = "4f8a858be733b90751a5e155ed34591ad121371e"
-pan_license_hash = "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21"
+pan_license_hash = "cce116476c8ad3a3af559ac94ceec8d0abd6184a"
 
 # Functions
 
