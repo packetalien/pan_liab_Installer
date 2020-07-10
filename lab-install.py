@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2018, Palo Alto Networks
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -130,12 +130,12 @@ IT_artifact_file = "liab-installed.txt"
 pan_license_filename = "pan-license-vmseries.py"
 
 # Hard Coded hashes, TODO: Move to conf file.
-vminfo_sha = "9371858d5d7ea84c0b0ef944e3871135e7d8a482"
+vminfo_sha = "fa2ee715c3fc4891124aa42131ad8186d8abbcaa"
 panos_vmx_hash = "e37b2c76c84a3eee1b2564d957d443c5bac5d8f7"
 se_tools_vmx_hash = "75c7e8a038b73c316dd55f69ac91aadd40251662"
 msft_dc_hash = "da81e84a956fbee76132640fdd8b9d58a9be0cca"
 msft_rodc_hash = "4f8a858be733b90751a5e155ed34591ad121371e"
-pan_license_hash = "9d195f6af25dae9723ad074f8909fb274fb0b582"
+pan_license_hash = "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21"
 
 # Functions
 
