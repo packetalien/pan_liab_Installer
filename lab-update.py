@@ -301,7 +301,7 @@ def main():
         new_pan_soc = findova("pan-soc.ova")
         logger.debug("Found ova at: %s" % (new_pan_soc))
         old_pan_soc = findfile("pan-soc.vmx", getuser())
-        if old_pan_soc != "None":
+        if old_pan_soc:
             try:
                 deletevm(old_pan_soc)
                 logger.debug("Found vmx at: %s" % (old_pan_soc))
@@ -310,6 +310,8 @@ def main():
                 logger.debug("Could not find a pan-soc.vmx.")
                 print("Could not find pan-soc.vmx. Moving onto unpack.")
                 pass
+        else:
+            pass
         if os.system() == "Darwin":
             logger.debug("MacOS Detected starting unpack to %s" % (getuser() + os.sep + vmware_dir_macos))
             unpackova(new_pan_soc, getuser() + os.sep + vmware_dir_macos)
