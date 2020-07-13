@@ -43,6 +43,7 @@ import requests
 import logging
 import webbrowser
 import shutil
+import time
 from platform import system
 from subprocess import call
 from logging.handlers import RotatingFileHandler
@@ -73,26 +74,23 @@ logger.setLevel("DEBUG")
 
 # These are ordered lists, they are not smart. If you mess with the order, the script breaks
 # TODO: Upgrade to new vmcontrols library wrapper.
+vmware_dir_windows = "Documents\Virtual Machines"
+vmware_dir_macos = "Virtual Machines.localized"
 
 ovalist = [
-    "oss-tmsclient-linux.ova",
     "pan-soc.ova"
 ]
 vmxlist = [
-    "oss-tmsclient-linux.vmx",
     "pan-soc.vmx"
     ]
 ovafiledir = [
-    "/oss-tmsclient-linux.vmwarevm/",
     "/pan-soc.vmwarevm/"
     ]
 ovafiledirwin = [
-    "oss-tmsclient-linux/",
     "pan-soc/"
     ]
 ovagdrive = [
-    "https://drive.google.com/open?id=1MjAb3ouk4PsQUAMK1baDigSJfFirHAnO",
-    "https://drive.google.com/open?id=16oFYYnb6Qb2u0NBEUZAavwGmpYvmjFBd"
+    "https://drive.google.com/file/d/1c7VWEKHkvLewOrsjamn7q3p_Cw6p1o-O/view?usp=sharing"
     ]
 
 chrome_path = "open -a /Applications/Google\ Chrome.app %s"
@@ -104,267 +102,216 @@ def getuser():
     home = expanduser("~")
     return home
 
-def filecheck(filename):
-    home = getuser()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    searchdir = home + basedir
-    for base, dirs, files, in os.walk(searchdir):
-        if filename in files:
-            return True
+def timestamp():
+    '''
+    Function returns a timestamp in %Y%m%d-%H%M%S format.
+    '''
+    stamp = strftime("%Y%m%d-%H%M%S")
+    return stamp
 
-def filecheckwin(filename):
-    home = getuser()
-    basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
-    searchdir = os.path.normpath(home + basedir)
-    for base, dirs, files, in os.walk(searchdir):
-        if filename in files:
-            return True
+def findova(filename):
+    '''
+    Function searches user directory for file.
+    It returns location/file. 
 
-def dircheckwin():
-    try:
+    Uses os.walk for compatibility.
+    '''
+    home = getuser()
+    for base, dirs, files, in os.walk(home):
+        if filename in files:
+            return os.path.join(base, filename)
         print ("\n")
-        print("{:-^30s}".format("IT-Managed-VMs Directory Check"))
-        home = getuser()
-        basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
-        vmdir = os.path.normpath(home + basedir)
-        if os.path.isdir(os.path.normpath(vmdir)):
-            print("SUCCESS: Directory Located.")
-            print("{:-^30s}".format("IT-Managed-VMs Directory Check"))
-            logger.debug("Directory located.")
-        else:
-            print("Directory not found. Creating it now.")
-            print("{:-^30s}".format("IT-Managed-VMs Directory Check"))
-            cmd = "mkdir -p"
-            cmdtrue = cmd + " " + os.path.normpath("\"" + vmdir + "\"")
-            logger.debug("Directory not found, sending cmd: %s" % cmdtrue)
+
+def unpackova(filename, location):
+    '''
+    Unpacks OVA with OVFTool. Looks for OVFTool in
+    the default installed directory of Windows and
+    MacOS. 
+    TODO: Remove HardCoding of App location.
+    
+    Expects full location of file and unpack directory.
+
+    For Windows, uses "/" intead of os.sep for compatibility
+    with ovftool.exe. This seems to be isolated to
+    ovftool.exe and vmrun.exe.
+    '''
+    try:
+        logger.debug("Started ova upack at %s"
+                     % str(timestamp()))
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool",
+                filename, location])
+        elif system() == "Windows":
+            builddir = os.path.normpath("\"" + getuser() + os.sep +  vmware_dir_windows + "\"")
+            unpackbuilder = os.path.normpath("\"" + filename + "\"")
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\OVFTool\ovftool.exe\"")
+            cmdtrue = (cmd + " " + unpackbuilder + " " + builddir)
+            logger.debug("Started ova upack at %s"
+                        % str(timestamp()))
+            logger.debug("Sent following command to shell: %s" % (cmdtrue))
             call(cmdtrue, shell=True)
-        print ("\n")
-    except:
-        print ("\n")
-        print("{:-^30s}".format("ERROR"))
-        print(
-            "An error has occured while checking for VM Directory."
-            )
-        logger.info("An error occured during direcotry validation.")
-        print("For support please joing #labinabox on Slack.")
-        print("{:-^30s}".format("ERROR"))
-        print ("\n")
-
-def dircheckmacos():
-    try:
-        home = getuser()
-        basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-        vmdir = home + basedir
-        if os.path.isdir(vmdir):
-            print("SUCCESS: Directory Located.")
-            print("{:-^30s}".format("IT-Managed-VMs Directory Check"))
-            logger.debug("Directory located.")
+            logger.debug("Completed ova unpack at %s"
+                        % str(timestamp()))
         else:
-            print("Directory not found. Creating it now.")
-            print("{:-^30s}".format("IT-Managed-VMs Directory Check"))
-            logger.debug("Directory not found, creating: %s" % vmdir)
-            call(["mkdir","-p",vmdir])
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()    
+        logger.debug("Completed ova unpack at %s"
+                     % str(timestamp()))
     except:
-        print ("\n")
-        print("{:-^30s}".format("ERROR"))
-        print(
-            "An error has occured while checking for VM Directory."
-            )
-        logger.info("An error occured during direcotry validation.")
-        print("For support please joing #labinabox on Slack.")
-        print("{:-^30s}".format("ERROR"))
-        print ("\n")
+        logger.debug("Exception occured in unpackova().")
 
-def unpackova(filename):
-    home = getuser()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    builddir = home + basedir
-    unpackbuilder = home + basedir + "/" + filename
-    call(["/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool",unpackbuilder,builddir])
+def startvm(vmx):
+    '''
+    Starts a virtual machine on Windows or MacOS.
+    Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    expects a full file location to a vmx file.
+    
+    startvm(vmx)
+    
+    TODO: Remove hardcoded path to vmrun.
+    '''
+    try:
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","start",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "start" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
+        logger.debug("Succesfully started %s" % (vmx))
+    except IOError as e:
+        logger.debug("IOError as %s" % (e))
 
-def unpackovawin(filename):
-    home = getuser()
-    basedir = "/Documents/Virtual Machines/IT-Managed-VMs"
-    builddir = os.path.normpath("\"" + home + basedir + "\"")
-    unpackbuilder = os.path.normpath("\"" + home + basedir + "/" + filename + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\OVFTool\ovftool.exe\"")
-    cmdtrue = (cmd + " " + unpackbuilder + " " + builddir)
-    call(cmdtrue, shell=True)
+def deletevm(vmx):
+    '''
+    Deletes a virtual machine on Windows or MacOS.
+    Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    expects a full file location to a vmx file.
+    
+    deletevm(vmx)
+    
+    TODO: Remove hardcoded path to vmrun.
+    '''
+    try:
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","deleteVM",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "deleteVM" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
+        logger.debug("Succesfully deleted %s" % (vmx))
+    except IOError as e:
+        logger.debug("IOError as %s" % (e))
 
-def startvm(vmvmx,vmvm):
-    #pdb.set_trace()
-    home = getuser()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    startvm = home + basedir + vmvm + vmvmx
-    call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","start",startvm])
+def suspendvm(vmx):
+    '''
+    Suspends a virtual machine on Windows or MacOS.
+    Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    TODO: Remove hardcoded path to vmrun.
+    '''
+    try:
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","suspend",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "suspend" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
+        logger.debug("Succesfully deleted %s" % (vmx))
+    except IOError as e:
+        logger.debug("IOError as %s" % (e))
 
-def deletevm(vmvm,vmvmx):
-    home = getuser()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    deletevirtual = home + basedir + vmvm + vmvmx
-    call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","deleteVM",deletevirtual])
+def stopvm(vmx):
+    '''
+    Stops a virtual machine on Windows or MacOS.
+    Expects a full path for vmx variable.
+    
+    Looks for vmrun in default install directories.
+    
+    TODO: Remove hardcoded path to vmrun.
+    '''
+    try:
+        if system() == "Darwin":
+            call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","stop",
+                vmx])
+        elif system() == "Windows":
+            cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
+            cmdtrue = os.path.normpath(cmd +
+                                    " " + "-T" + " " + "ws" +
+                                    " " + "stop" + " " + os.path.normpath("\"%s\"" % (vmx)))
+            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
+            call(cmdtrue, shell=True)
+        else:
+            print("Unsupported OS Detected, exiting....")
+            logger.info("Unsupported OS Detected, exiting....")
+            exit()
+        logger.debug("Succesfully deleted %s" % (vmx))
+    except IOError as e:
+        logger.debug("IOError as %s" % (e))
 
-def suspendvm(vmvmx,vmvm):
-    home = getuser()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    suspendvm = home + basedir + vmvm + vmvmx
-    call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","suspend",suspendvm])
-
-def stopvm(vmvmx,vmvm):
-    #pdb.set_trace()
-    home = getuser()
-    basedir = "/Documents/Virtual Machines.localized/IT-Managed-VMs"
-    stopvm = home + basedir + vmvm + vmvmx
-    call(["/Applications/VMware Fusion.app/Contents/Library/vmrun","stop",stopvm])
-
-def startvmwin(vmvmx,vmvm):
-    home = getuser()
-    basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
-    registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
-    cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "start" + " " + registervm)
-    call(cmdtrue, shell=True)
-
-def deletevmwin(vmvmx,vmvm):
-    home = getuser()
-    basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
-    registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
-    cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "deleteVM" + " " + registervm)
-    call(cmdtrue, shell=True)
-
-def suspendvmwin(vmvmx,vmvm):
-    home = getuser()
-    basedir = os.path.normpath("/Documents/Virtual Machines/IT-Managed-VMs")
-    registervm = os.path.normpath("\"" + home + basedir + vmvm + "/" + vmvmx + "\"")
-    cmd = os.path.normpath("\"c:\Program Files (x86)\VMware\VMware Workstation\\vmrun.exe\"")
-    cmdtrue = os.path.normpath(cmd + " " + "-T" + " " + "ws" + " " + "suspend" + " " + registervm)
-    call(cmdtrue, shell=True)
-
+def findfile(filename, searchdir):
+    '''
+    Function searches user directory for file.
+    It returns location/file. 
+    
+    Uses os.walk for compatibility.
+    '''
+    for base, dirs, files, in os.walk(searchdir):
+        if filename in files:
+            return os.path.join(base, filename)
 
 def main():
-    count = 0
-    countvm = 0
-    countstart = 0
-    countsuspend = 0
-    oscheck = system()
-    if oscheck == "Darwin":
-        try:
-            if filecheck(ovalist[1]):
-                print("\n")
-                print("{:-^30s}".format("File Check"))
-                logger.debug("File located: %s" % ovalist[1])
-                print("SUCCESS: File %s Located." % (ovalist[1]))
-                print("{:-^30s}".format("File Check"))
-                print("\n")
-            else:
-                print("\n")
-                print("{:-^30s}".format("File Check"))
-                print("File %s has not been downloaded." % (ovalist[1]))
-                print("Opening a Chrome Browser window now.")
-                logger.debug("File not found, opened browser to %s" % ovagdrive[1])
-                webbrowser.get(chrome_path).open(ovagdrive[1])
-                print("For support joing #labinabox on Slack.")
-                print("{:-^30s}".format("File Check"))
-                print("\n")
-            if filecheck(vmxlist[0]):
-                print("\n")
-                print("{:-^30s}".format("Locating and deleteing deprecated VM"))
-                logger.debug("File located: %s" % vmxlist[0])
-                deletevm(ovafiledir[0],vmxlist[0])
-                print("SUCCESS: VM DELETED.")
-            if filecheck(vmxlist[1]):
-                print("\n")
-                print("\n")
-                print("{:-^30s}".format("Importing OVA %s" % ovalist[1]))
-                print("%s already unpacked" % vmxlist[1])
-                logger.debug("%s already unpacked." % vmxlist[1])
-                print("{:-^30s}".format("Importing OVA %s" % ovalist[1]))
-                print("\n")
-            else:
-                print("\n")
-                print("{:-^30s}".format("Importing OVA %s" % ovalist[1]))
-                print("We are unpacking %s, this could take some time. \n " % (ovalist[1]))
-                unpackova(ovalist[1])
-                print("For support joing #labinabox on Slack.")
-                print("{:-^30s}".format("Importing OVA %s" % ovalist[1]))
-                print("\n")
-            for eachstart in vmxlist:
-                startvm(vmxlist[1],ovafiledir[1])
-                stopvm(vmxlist[1],ovafiledir[1])
-        except:
-            print ("\n")
-            print("{:-^30s}".format("ERROR"))
-            print(
-                "A major error has occured and the install process has halted."
-                )
-            logger.debug("Error, install halted.")
-            print("For support contact #labinabox on Slack.")
-            print("{:-^30s}".format("ERROR"))
-            print ("\n")
-    elif oscheck == "Windows":
-        try:
-            for each in ovalist:
-                if filecheckwin(each):
-                    print("\n")
-                    print("{:-^30s}".format("File Check"))
-                    logger.debug("File located: %s" % each)
-                    print("SUCCESS: File %s Located." % (each))
-                    print("{:-^30s}".format("File Check"))
-                    print("\n")
-                else:
-                    print("\n")
-                    print("{:-^30s}".format("File Check"))
-                    print("File %s has not been downloaded." % (each))
-                    print("Opening a Chrome Browser window now.")
-                    logger.debug("File not found, opened browser to %s" % ovagdrive[count])
-                    webbrowser.get(chrome_path_win).open(ovagdrive[count])
-                    print("For support joing #labinabox on Slack.")
-                    print("{:-^30s}".format("File Check"))
-                    print("\n")
-                count = count + 1
-            for eachvm in vmxlist:
-                if filecheckwin(eachvm):
-                    print("\n")
-                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
-                    print("%s already unpacked" % eachvm)
-                    logger.debug("%s already unpacked." % eachvm)
-                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
-                    print("\n")
-                else:
-                    print("\n")
-                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
-                    print("We are unpacking %s, this could take some time. \n " % (eachvm))
-                    unpackovawin(ovalist[countvm])
-                    print("For support joing #labinabox on Slack.")
-                    print("{:-^30s}".format("Importing OVA %s" % eachvm))
-                    print("\n")
-                countvm = countvm + 1
-            for eachstart in vmxlist:
-                startvmwin(eachstart,ovafiledirwin[countstart])
-                countstart = countstart + 1
-                suspendvmwin(eachstart,ovafiledirwin[countsuspend])
-                countsuspend = countsuspend + 1
-        except:
-            print ("\n")
-            print("{:-^30s}".format("ERROR"))
-            print(
-                "A major error has occured and the install process has halted."
-                )
-            logger.debug("Error, install halted.")
-            print("For support contact #labinabox on Slack.")
-            print("{:-^30s}".format("ERROR"))
-            print ("\n")
-    else:
-        print ("\n")
-        print("{:-^30s}".format("ERROR"))
-        print(
-            "A major error has occured and the install process has halted."
-            )
-        logger.debug("Error, install halted. Unsupported OS.")
-        print("For support contact #labinabox on Slack.")
-        print("{:-^30s}".format("ERROR"))
-        print ("\n")
-
+    '''
+    Deletes old pan-soc and installs new.
+    '''
+    try:
+        new_pan_soc = findova("pan-soc.ova")
+        logger.debug("Found ova at: %s" % (new_pan_soc))
+        old_pan_soc = findfile("pan-soc.vmx", getuser())
+        logger.debug("Found vmx at: %s" % (old_pan_soc))
+        logger.info("Deleteing old pan-soc")
+        deletevm(old_pan_soc)
+        if os.system() == "Darwin":
+            logger.debug("MacOS Detected starting unpack to %s" % (getuser() + os.sep + vmware_dir_macos))
+            unpackova(new_pan_soc, getuser() + os.sep + vmware_dir_macos)
+        elif os.system() == "Windows":
+            logger.debug("MacOS Detected starting unpack to %s" % (getuser() + os.sep + vmware_dir_macos))
+            unpackova(new_pan_soc, getuser() + os.sep + vmware_dir_windows)
+    except:
+         logger.info("An exception occured in the main function, exiting...")
+         exit()
+     
 if __name__ == "__main__":
     main()
