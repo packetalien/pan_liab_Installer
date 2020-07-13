@@ -310,6 +310,7 @@ def main():
         elif os.system() == "Windows":
             logger.debug("MacOS Detected starting unpack to %s" % (getuser() + os.sep + vmware_dir_macos))
             unpackova(new_pan_soc, getuser() + os.sep + vmware_dir_windows)
+        startvm(findfile("pan-soc.vmx", getuser()))
     except:
          logger.info("An exception occured in the main function, exiting...")
          exit()
