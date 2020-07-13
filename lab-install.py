@@ -362,7 +362,6 @@ def getvminfo(url, filename):
             logger.debug("Saved %s as %s" % (url, filename))
             vminfo = json.loads(open(filename).read())
             return vminfo
-        
     except:
         logger.debug("Exception occured in getvminfo().")
 
@@ -398,8 +397,7 @@ def find_license_file(filename, searchdir):
     '''
     for base, dirs, files, in os.walk(searchdir):
         if filename in files:
-            if check_sha1sum(pan_license_hash, sha1sum(os.path.join(base, filename))) == True:
-                return os.path.join(base, filename)
+            return os.path.join(base, filename)
         
 # TODO: Update with pathlib.Path.rglob after moving to 3.X        
 
