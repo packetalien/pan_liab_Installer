@@ -44,6 +44,7 @@ import logging
 import webbrowser
 import shutil
 import time
+from time import strftime
 from platform import system
 from subprocess import call
 from logging.handlers import RotatingFileHandler
