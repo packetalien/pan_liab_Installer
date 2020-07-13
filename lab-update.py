@@ -21,7 +21,7 @@ Palo Alto Networks lab-update.py
 This script updates Lab in a Box (LiaB).
 
 Execute the script and it auomtatically updates LiaB 
-(e.g., python lab-install.py)
+(e.g., python lab-update.py)
 
 This software is provided without support, warranty, or guarantee.
 Use at your own risk.
@@ -312,10 +312,10 @@ def main():
                 pass
         else:
             pass
-        if os.system() == "Darwin":
+        if system() == "Darwin":
             logger.debug("MacOS Detected starting unpack to %s" % (getuser() + os.sep + vmware_dir_macos))
             unpackova(new_pan_soc, getuser() + os.sep + vmware_dir_macos)
-        elif os.system() == "Windows":
+        elif system() == "Windows":
             logger.debug("MacOS Detected starting unpack to %s" % (getuser() + os.sep + vmware_dir_macos))
             unpackova(new_pan_soc, getuser() + os.sep + vmware_dir_windows)
         startvm(findfile("pan-soc.vmx", getuser()))
