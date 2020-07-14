@@ -303,6 +303,7 @@ def main():
         old_pan_soc = findfile("pan-soc.vmx", getuser())
         if old_pan_soc:
             try:
+                stopvm(old_pan_soc)
                 deletevm(old_pan_soc)
                 logger.debug("Found vmx at: %s" % (old_pan_soc))
                 logger.info("Deleteing old pan-soc")
