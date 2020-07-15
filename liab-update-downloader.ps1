@@ -8,80 +8,26 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 # ========================================================================
 
-# This script creates the IT-Managed-VMs Directory and opens two instruction
-# pages. First page is a pre-flight guide (installing and downloading needed
-# scripts and tools). The second page is the instruction guide.
+# This script opens a URL to the download file and instructions for install. 
 
-# When the script completes it will write out a simple text file named
-# "liab-installer-step1.txt" 
-
-# Author: Richard Porte
+# Author: Richard Porter
 # Contact: rporter@paloaltonetworks.com
 
-# Modules used by this script
-Import-Module BitsTransfer
 
 # Variables used by this script
 
 $instructionsurl = "https://docs.google.com/document/d/1b3ZJ4Nv8iFp3DuOyNrn9WmTWQ2uYspU9cVKYYtFvM0M"
-$pythoninstaller = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/lab-update.py"
-$getpython = "https://www.python.org/ftp/python/3.7.7/python-3.7.7.exe"
-$pythonout = ".\python-3.7.7.exe"
-$pythonexe = "C:\Program Files (x86)\Python37-32\python.exe"
-$pythoninstallername = "lab-update.py"
+$OAVurl = "https://drive.google.com/file/d/1c7VWEKHkvLewOrsjamn7q3p_Cw6p1o-O/view?usp=sharing"
 
-
-# Self-elevate the script if required
-if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {  if ([int](Get-CimInstance -Class Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber) -ge 6000) {
-  $CommandLine = "-File `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments
-  Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList $CommandLine
-  Exit
- }
-}
-
-
-$itdir = "$env:USERPROFILE\Documents\Virtual Machines\"
-
-#Running test for IT Directory
-if(!(Test-Path -Path $itdir )){
-
-    New-Item -ItemType Directory -Force -Path $itdir
-    "Created Directory: $itdir"
-}
-
-# Setting the script execution space to our IT-Managed-VMs directory
-
-set-location $itdir
-
-# MSI Name is hard coded (for some reason powershell did not like the VAR?
-# Test Case for Install only if not present.
-# TODO: Add case for update and an else for wrong version re-install
-
-if(!(Test-Path -Path "c:\Program Files (x86)\Python37-32\python.exe"))
-{
-
-Start-BitsTransfer -Source $getpython -Destination $pythonout
-& cmd /c "python-3.7.7.exe" "/quiet" "InstallAllUsers=1" "PrependPath=1"
-
-}
-
-
-if(Test-Path -Path "c:\Program Files (x86)\Python37-32\python.exe")
-{
-  Start-BitsTransfer -Source $pythoninstaller -Destination $pythoninstallername 
-  & cmd /c $pythonexe "$pythoninstallername"
-}
-else {
-  "Script could not find python. An install was attempted. Please contact #labinabox on Slack for support."
-}
 # Calling Chrome for Instructions Page
 
 Start-Process "chrome.exe" $instructionsurl
+Start-Process "chrome.exe" $OAVurl
 # SIG # Begin signature block
 # MIIPMQYJKoZIhvcNAQcCoIIPIjCCDx4CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUyNLYTBefYfg+nog+Dn7lbibC
-# Dnmgggx/MIIFtzCCA5+gAwIBAgITWgAAAAKvEDrpExwlZwAAAAAAAjANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcUBz/V/7uAVXeDC6CCurdl4A
+# gfygggx/MIIFtzCCA5+gAwIBAgITWgAAAAKvEDrpExwlZwAAAAAAAjANBgkqhkiG
 # 9w0BAQsFADBXMQswCQYDVQQGEwJVUzEfMB0GA1UEChMWUGFsbyBBbHRvIE5ldHdv
 # cmtzIEluYzEnMCUGA1UEAxMeUGFsbyBBbHRvIE5ldHdvcmtzIEluYyBSb290IENB
 # MB4XDTE1MTAwNzIyMDYxOFoXDTI1MTAwNzIyMTYxOFowZDEVMBMGCgmSJomT8ixk
@@ -152,12 +98,12 @@ Start-Process "chrome.exe" $instructionsurl
 # b2FsdG9uZXR3b3JrczEpMCcGA1UEAxMgUGFsbyBBbHRvIE5ldHdvcmtzIEluYyBE
 # b21haW4gQ0ECE2QADgneQucXmMsVNZcAAAAOCd4wCQYFKw4DAhoFAKB4MBgGCisG
 # AQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQw
-# HAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFMvF
-# Wy3/FkL7L/9qmXBByJN/S7AIMA0GCSqGSIb3DQEBAQUABIIBAJ6FRgvCYohLsa7z
-# Y5w1rPB4txDBE5y6yB7HfQQoozpeaYxJzn0ZbvNVMNHCcZBY665smG6qvLbXCyhf
-# qhGcB8SUP3x8CHUmC/bnHi0Bz26Re2Q88sT8oc7YeNZnyovX/ZTUKC8FGVUkFFls
-# c1pVd8NeO7JxeO2E5wQ1v2wd9SEAZBYWoYf1JPssvOQDgLPcXA2QBKCcVnqnprte
-# hHlsSZrqb+Q2tJBq1tUjSeaH0EvgveFnfmQ/+X7fhYyMsWb/RrgSwEdIycxJPFkH
-# oKJ4qcFeXFq2qwPcomaAlSJTXboKJa/6HYT4d9QfepHDa2hUobnKz2EMTQe19KdL
-# uvvaWlc=
+# HAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFO7k
+# jImSYB0sCNWE9+spHlgHqNWuMA0GCSqGSIb3DQEBAQUABIIBAGXpUW2U6pIrgu/Q
+# fNwq9mYUnAi6qmU1BlE8FdYB8QZogVHJM3ug2Mdi1VALFy8Q1UicnOcgirE649pw
+# D+JlZeVUJlF8+yaOPX5pUyvIl6+jIr2PDWpEd9zuJ3x61cclmIyFew7Vxnog2xdT
+# dXZNewSldPkc5U06KaWv04JJylAZsIc8o4M2jRMphTi2l1FnwkDzSyQgfCQx+RqT
+# 91snJPAut6T1A9uLEyskyNRE1HZqtyQSghdale0rrPIqDUIysj95uKWD7p8ltdeN
+# x/7EVEFItLrWgQzLZ5WZ30H6JfrhjNtM1tNYvkLZaks6KRcPHhPAjribQyFaW1XW
+# tnuhA0M=
 # SIG # End signature block
