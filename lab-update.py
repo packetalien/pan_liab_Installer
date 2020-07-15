@@ -45,6 +45,7 @@ import webbrowser
 import shutil
 import time
 from time import strftime
+from shutil import rmtree
 from platform import system
 from subprocess import call
 from logging.handlers import RotatingFileHandler
@@ -293,6 +294,29 @@ def findfile(filename, searchdir):
         if filename in files:
             return os.path.join(base, filename)
 
+def remove_vm_folder():
+    '''
+    Checks for an existing folder under Virtual Machines directory.
+    
+    Looks for directory artifacts for pan-soc.
+    
+    #TODO: remove directory hard-coding.
+    '''
+    try:
+        if system() == "Darwin":
+            if os.path.isdir(getuser() + os.sep + vmware_dir_macos + os.sep + "pan-soc.vmwarevm"):
+                logger.info("Existing pan-soc directory detected. Deleting....")
+                rmtree(getuser() + os.sep + vmware_dir_macos + os.sep + "pan-soc.vmwarevm")
+                logger.debug("rmtree() ran. Directory should be deleted.")
+        elif system() == "Windows":
+            if os.path.isdir(getuser() + os.sep + vmware_dir_windows + os.sep + "pan-soc"):
+                logger.info("Existing pan-soc directory detected. Deleting....")
+                rmtree(getuser() + os.sep + vmware_dir_windows + os.sep + "pan-soc.vmwarevm")
+                logger.debug("rmtree() ran. Directory should be deleted.")     
+    except:
+        print("An exception occured in the directory removal process.")
+        logger.debug("Exception in remove_vm_folder().")
+
 def main():
     '''
     Deletes old pan-soc and installs new.
@@ -304,9 +328,11 @@ def main():
         if old_pan_soc:
             try:
                 stopvm(old_pan_soc)
+                print("If present. Ignore Errors. VMWare issue, not LiaB.")
                 deletevm(old_pan_soc)
                 logger.debug("Found vmx at: %s" % (old_pan_soc))
                 logger.info("Deleteing old pan-soc")
+                remove_vm_folder()
             except:
                 logger.debug("Could not find a pan-soc.vmx.")
                 print("Could not find pan-soc.vmx. Moving onto unpack.")
