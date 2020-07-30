@@ -86,6 +86,9 @@ logger.setLevel("DEBUG")
 # TODO: Move local variables to a conf file in 3.0
 # URLS
 
+# Firewall IP for Licensing
+fwip = "192.168.55.10"
+
 panos_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/pan-vm50.vmx"
 setools_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/linux-utility.vmx"
 msft_dc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/msft-dc.vmx"
@@ -99,6 +102,7 @@ workstation_url = "https://github.com/packetalien/diabresources/blob/master/db/d
 pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZHyX2AQ"
 liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc2uqicV0ziW4"
 config_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/config.json"
+vm50auth = "https://drive.google.com/file/d/1PWEnzE6S4AsRPt1xeDMjENCAZD-tKpoS/view?usp=sharing"
 
 # TODO: Move all of this to a CONF file.
 # Default Directories
@@ -136,6 +140,59 @@ se_tools_vmx_hash = "75c7e8a038b73c316dd55f69ac91aadd40251662"
 msft_dc_hash = "da81e84a956fbee76132640fdd8b9d58a9be0cca"
 msft_rodc_hash = "4f8a858be733b90751a5e155ed34591ad121371e"
 pan_license_hash = "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21"
+
+# API Keys for VM-Series
+passkey8 = "LUFRPT10VGJKTEV6a0R4L1JXd0ZmbmNvdUEwa25wMlU9d0N5d292d2FXNXBBeEFBUW5pV2xoZz09"
+passkey9 = "LUFRPT1tZVhOVFFMUERLZk5qd09Kd3FLT3FMcXRwOTg9Y2NOdGxCM01PZEhRcFhZem94MXhzeUp1eW54RWxZbTZvSCtsUFJvMTlTQU1qbUVGWGNtdjZ0aWFGZENGQUhVdA=="
+
+# Start Up VM Variable
+start_message = '''
+___________((_____))
+____________))___((
+___________((_____))
+____________))___((
+___________((_____))____________$$$$$$
+____________))___((____________$$____$$
+_$$$$$$$$$$$$$$$$$$$$$$$$$$$$$______$$
+__$$$$$$$$Start$$$$$$$$$$$$$$_______$$
+___$$$$$$$$$$the$$$$$$$$$$$________$$
+____$$$$$$VM-50$$$$$$$$$$$________$$
+____$$$$$$$$NOW$$$$$$$$$$$______$$
+_____$$$$$$$$$$$$$$$$$$$$_____$$
+_____$$$$$$$$$$$$$$$$$$$$$$$$$
+______$$$$$$$$$$$$$$$$$$
+_______$$$$$$$$$$$$$$$$
+_________$$$$$$$$$$$$
+___________$$$$$$$$
+_$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+___$$$$$$$$$$$$$$$$$$$$$$$$
+_____$$$$$$$$$$$$$$$$$$$$__
+The VM-Series Can take some time
+to boot. Start it NOW.
+'''
+
+download_message = '''
+     .
+       .
+   . ;.
+    .;
+     ;;.
+   ;.;;
+   ;;;;.
+   ;;;;;
+   ;;;;;
+   ;;;;;
+   ;;;;;
+   ;;;;;
+ ..;;;;;..
+  ':::::'
+    ':`
+
+------------------------------------------------
+Download the vm50auth.txt. The script will wait
+60 seconds and try again. 
+------------------------------------------------
+'''
 
 # Functions
 
@@ -384,6 +441,8 @@ def findfile(filename, searchdir):
     for base, dirs, files, in os.walk(searchdir):
         if filename in files:
             return os.path.join(base, filename)
+        else:
+            return False
 
 def find_license_file(filename, searchdir):
     '''
@@ -665,66 +724,122 @@ def network_loader():
     except:
         logger.debug("Exception occured in network_loader() os type: %s" % (system()))
 
-def pan_license(vminfo):
+def set_auth_code(passkey, fwip, authcode):
+    try:
+        ctype = "op"
+        cmd = "<request><license><fetch><auth-code>%s</auth-code></fetch></license></request>" % (authcode)
+        call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
+        r = requests.get(call, verify=False)
+        logger.debug("set_auth_code() returned %s" % r.text)
+        print("Set Authcode Function returned: %s" % r.text)
+        return r.text
+    except requests.exceptions.ConnectionError as e:
+        print("There was a problem with setting the authCode.")
+        print("If this is helpful the error was captured as: " + e)
+        logger.debug("Exception as %s" % e)
+
+def fetchlic(passkey):
+    try:
+        ctype = "op"
+        cmd = "<request><license><fetch/></license></request>"
+        call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
+        r = requests.get(call, verify=False)
+        return r.text
+    except requests.exceptions.ConnectionError as e:
+        print("There was a problem with fetching licenses from the support server.")
+        print("If this is helpful the error was captured as: " + e)
+
+def api_access_check(fwip):
+    try:
+        # old admin password check
+        result8 = syscheck(passkey8,fwip)
+        # new lab passwordk check
+        result9 = syscheck(passkey9,fwip)
+        # TODO: Clean this up if possible.
+        if (result8 == 200):
+            logger.debug("Access successful with legacy api-key %s" % passkey8)
+            passkey = passkey8
+            print("Access with admin:paloalto, old version detected.")
+            return passkey
+        elif(result9 == 200):
+            logger.debug("Access successful with new api-key %s " % passkey9)
+            print("Access with admin:Paloalto1!, new version detected.")
+            passkey = passkey9
+            return passkey
+        else:
+            print("Access failed, do you have a custom admin password?")
+            return passkey8
+    except requests.exceptions.ConnectionError as e:
+        print("Attempted to access API. System not available.")
+
+def syscheck(passkey,fwip):
+    try:
+        ctype = "op"
+        cmd = "<show><system><info></info></system></show>"
+        call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
+        r = requests.get(call, verify=False)
+        return r.status_code
+    except requests.exceptions.ConnectionError as e:
+        print("Attempted to access API. System not available.")
+        
+def pan_license(fwip):
     '''
     Licenses VM-Series.
-    TODO: Cleanup functions, remove installer files.
+    TODO: Add Hash Checking for vm50auth.txt
     ''' 
     try:
-        if system() == "Darwin":
-            logger.info("Starting licensing process.")
-            print("{:-^30s}".format("Starting Licensing Process."))
-            print("{:-^30s}".format("It can take VM-Series 7 MIN to boot."))
-            print("{:-^30s}".format("Please be patient."))
-            startvm(findfile(vminfo.get("panvm50").get('vmx'), getuser() + os.sep + vmware_dir_macos))
-            call([python_mac, findfile(pan_license_filename, getuser())])
-        elif system() == "Windows":
-            logger.info("Starting licensing process.")
-            cmd = os.path.normpath("\"c:\Program Files (x86)\Python37-32\python.exe\"")
-            print("{:-^30s}".format("Starting Licensing Process."))
-            print("{:-^30s}".format("It can take VM-Series 7 MIN to boot."))
-            print("{:-^30s}".format("Please be patient."))
-            startvm(findfile(vminfo.get("panvm50").get('vmx'), getuser() + os.sep + vmware_dir_windows))
-            license_file = findfile(pan_license_filename, getuser())
-            cmdtrue = os.path.normpath(cmd + " " + os.path.normpath("\"%s\"" % (license_file)))
-            logger.debug("Sent the following to Windows Shell: %s" % (cmdtrue))
-            call(cmdtrue, shell=True)
+        try:
+            if findfile("vm50auth.txt", getuser()):
+                authcode = open(findfile("vm50auth.txt", getuser()), "r").read().rstrip()
+                logger.debug("Read file vm50auth.txt")
+            else:
+                while findfile("vm50auth.txt", getuser()) == False:
+                    print(download_message)
+                    if oscheck == "Darwin":
+                        webbrowser.get(chrome_path).open(vm50auth)
+                        logger.debug("Opened Browser to SourceURL for %s" % (vm50auth))
+                    elif oscheck == "Windows":
+                        webbrowser.get(chrome_path_win).open(vm50auth)
+                        logger.debug("Opened Browser to SourceURL for %s" % (vm50auth))
+                    else:
+                        print("Unsupported OS detected. Script will exit()")
+                        exit()
+                    sleep(60)
+                    if findfile("vm50auth.txt", getuser()):
+                        authcode = open(findfile("vm50auth.txt", getuser()), "r").read().rstrip()
+                        logger.debug("Read file vm50auth.txt")   
+        except IOError as e:
+            logger.debug("IOError as %s" % (e))
+            print("")
+        logger.info("Starting licensing process.")
+        passkey = api_access_check(fwip)
+        if syscheck(passkey,fwip) == 200: 
+            auth_results = set_auth_code(passkey, fwip, authcode)
+            logger.debug("Sent authcode to VM-Series, returned %s"
+                        % (auth_results))
+            print("Sent authcode to VM-Series, it returned %s"
+                % (auth_results))
+            time.sleep(5)
         else:
-            print("Unsupported OS detected, program will exit.")
-            logger.info("Unsupported OS. Now exiting.")
-            exit()
+            while syscheck(passkey, fwip) != 200:
+                print("VM-Series API not accessible. Waiting 15 Seconds then retrying.")
+                time.sleep(15)
+                passkey = api_access_check(fwip)
+                if syscheck(passkey,fwip) == 200:
+                    logger.debug("Set Support Key temporarily for CSP 245")
+                    auth_results = set_auth_code(passkey, fwip, authcode)
+                    logger.debug("Attempted to send authcode to VM-Series, returned %s"
+                                % (auth_results))
+                    print("Sent Authcode to VM-Series, it returned %s"
+                        % (auth_results))
     except:
-        logger.debug("Exception occured in network_loader() os type: %s" % (system()))
-
-def file_checker():
-    '''
-    File audit check for Lab in a Box Install.
-    This function will search for nessesary files
-    and if they are not present, will exit the install
-    with instructions to remediate.
-    '''
-    pass
-
+        logger.debug("Exception occured in the license process")
+        
 def main():
     oscheck = system()
     try:
         vminfo = getvminfo(vminfo_url, vminfo_filename)
         network_loader()
-        if find_license_file(pan_license_filename, getuser()):
-            logger.info("Located current license installer.")
-            print("Located current pan-license-vmseries.py.")
-            pass
-        else:
-            logger.info("License installer not located. Exiting.")
-            print("{:-^40s}".format("pan-license-vmseries.py ERROR"))
-            print("Current license installer file not located, intaller will exit.")
-            print("Opening location to installer file. Please download and restart install.")
-            print("{:-^40s}".format("pan-license-vmseries.py ERROR"))
-            if system() == "Darwin":
-                webbrowser.get(chrome_path).open(pan_license)
-            elif system() == "Windows":
-                webbrowser.get(chrome_path_win).open(pan_license)
-            exit()
         for each in vminfo:
             if findova(vminfo.get(each).get('ova')):
                 print("\n")
@@ -771,6 +886,7 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_fusion()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        print(start_message)
                                     elif vminfo.get(each).get('name') == "linux-utility":
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
                                     elif vminfo.get(each).get('name') == "msft-dc":
@@ -793,6 +909,7 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_fusion()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        print(start_message)
                                     elif vminfo.get(each).get('name') == "linux-utility":
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
                                     elif vminfo.get(each).get('name') == "msft-dc":
@@ -825,6 +942,7 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        print(start_message)
                                     elif vminfo.get(each).get('name') == "linux-utility":
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
                                     elif vminfo.get(each).get('name') == "msft-dc":
@@ -857,6 +975,7 @@ def main():
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
+                                        print(start_message)
                                     elif vminfo.get(each).get('name') == "linux-utility":
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
                                     elif vminfo.get(each).get('name') == "msft-dc":
@@ -906,7 +1025,7 @@ def main():
                 print("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
                 logger.info("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
                 exit()
-        pan_license(vminfo)
+        pan_license(fwip)
     except:
         print ("\n")
         print("{:-^30s}".format("ERROR"))
