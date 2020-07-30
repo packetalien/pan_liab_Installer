@@ -171,27 +171,24 @@ The VM-Series Can take some time
 to boot. Start it NOW.
 '''
 
-download_message = '''
-     .
-       .
-   . ;.
-    .;
-     ;;.
-   ;.;;
-   ;;;;.
-   ;;;;;
-   ;;;;;
-   ;;;;;
-   ;;;;;
-   ;;;;;
- ..;;;;;..
-  ':::::'
-    ':`
-
-------------------------------------------------
-Download the vm50auth.txt. The script will wait
-60 seconds and try again. 
-------------------------------------------------
+network_configure = r'''
+              _
+             | |
+             | |===( )   //////
+             |_|   |||  | o o|
+                    ||| ( c  )                  ____
+                     ||| \= /                  ||   \_
+                      ||||||                   ||     |
+                      ||||||                ...||__/|-"
+                      ||||||             __|________|__
+                        |||             |______________|
+                        |||             || ||      || ||
+                        |||             || ||      || ||
+------------------------|||-------------||-||------||-||-------
+                        |__>            || ||      || ||
+Please configure your Windows Network Settings.
+You will need to import the defaultse file or the above
+will be the case :).
 '''
 
 print_authcode_message = r'''
@@ -362,28 +359,6 @@ def start_workstation():
     except:
         logger.debug("Exception occured in start_workstation()")
         logger.info("Problem starting VMWare Workstation. Is it installed?")
-
-def import_network_settings(config_file, location):
-    '''
-    Function sends start vnetlib.exe command to Windows
-    via subprocess.call(). It "Attempts" to import
-    network settings. The word attempt is used as
-    results have been mixed, even with shell=True.
-    
-    WARNING: Function uses shell=True argument due
-    to Windows commmand processing compatibility with
-    VMWare Workstation.
-    '''
-    try:
-        cmd = r"c:\Program Files (x86)\VMware\VMware Workstation\vnetlib.exe -- import "
-        logger.debug("Sending following command to shell: %s" % (cmd))
-        netcfg = getuser() + os.sep + config_file
-        Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
-        logger.info("VMWare Workstation Started %s" % (cmd))
-    except:
-        logger.debug("Exception occured in start_workstation()")
-        logger.info("Problem starting VMWare Workstation. Is it installed?")
-
 
 # TODO: Migrate vmware_dir_macos to conf file for portability. 
 # target 3.0 releases.
@@ -708,16 +683,12 @@ def network_loader():
             call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
         elif system() == "Windows":
             print("VMware Workstation import process is in the GUI.")
-            print("Getting defaultse config file now.")
+            print("The installer will bring up the instructions")
             print("Please import it in Virtual Networks Editor.")
-            print("Saving %s to: %s " % (workstation_url, getuser() + os.sep + vmware_dir_windows))
-            logger.info("Windows vnetlib.exe uses an odd -- switch.")
-            logger.info("Getting the config file, you will need to manually import.")
-            logger.info("Saving %s to: %s " % (workstation_url, getuser() + os.sep + vmware_dir_windows))
-            save(workstation_url, getuser() + os.sep + vmware_dir_windows + os.sep + workstationcfgfile)
             print("\nOpening instructions in 5 seconds.")
             time.sleep(5)
             webbrowser.get(chrome_path_win).open(win_network_url)
+            print(network_configure)
         else:
             print("Unsupported OS detected, program will exit.")
             logger.info("Unsupported OS. Now exiting.")
