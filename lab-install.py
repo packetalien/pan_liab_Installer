@@ -95,9 +95,9 @@ msft_dc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/
 msft_rodc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/msft-rodc.vmx"
 vminfo_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/vminfo.json"
 fusion_url = "https://raw.githubusercontent.com/packetalien/fusion-network-config/master/vmnet-configure.py"
-win_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36656"
-win_network_url = "https://loop.paloaltonetworks.com/docs/DOC-36685"
-macos_install_url = "https://loop.paloaltonetworks.com/docs/DOC-36686"
+win_install_url = "https://docs.google.com/document/d/1c1aGucFgBEEhtdHuiNxpUYyT9sMXEZ7FlnZ7KWSEB6U"
+win_network_url = "https://docs.google.com/document/d/1K9lvADAzlJa4R4S4G6aohYcT2t0BqYEK_183Oq7LRIs"
+macos_install_url = "https://docs.google.com/document/d/1c1aGucFgBEEhtdHuiNxpUYyT9sMXEZ7FlnZ7KWSEB6U"
 workstation_url = "https://github.com/packetalien/diabresources/blob/master/db/defaultse?raw=true"
 pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZHyX2AQ"
 liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc2uqicV0ziW4"
@@ -227,12 +227,14 @@ print_authcode_message = r'''
                           \%%         |
                            |%%        |
     No Auth Code Found
-    Not even a sound
+    Not even a Sound
     No Auth Code Today
-    It is far away
+    It is Far Away
     Not in a Hat
-    Not in the code
-    Not in the file
+    Not in the Code
+    Not in the Commode
+    Can you find the Link?
+    It surely does not stink!
 
 if you are seeing this message please enter an AuthCode:
 '''
@@ -873,6 +875,7 @@ def main():
                                         stop_fusion()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
                                         print(start_message)
+                                        time.sleep(10)
                                     elif vminfo.get(each).get('name') == "linux-utility":
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
                                     elif vminfo.get(each).get('name') == "msft-dc":
@@ -896,6 +899,7 @@ def main():
                                         stop_fusion()
                                         get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
                                         print(start_message)
+                                        time.sleep(10)
                                     elif vminfo.get(each).get('name') == "linux-utility":
                                         get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
                                     elif vminfo.get(each).get('name') == "msft-dc":
