@@ -194,6 +194,49 @@ Download the vm50auth.txt. The script will wait
 ------------------------------------------------
 '''
 
+print_authcode_message = r'''
+                               __________
+                    __________/VVVVVVVVVV\
+                   /VVVVVVVVVVVVVVVVVVVVVV|
+                 /VVVVVVVVVVVVVVVVVVVVVVV/
+               /VVVVVVVVVVVVVVVVVVVVVVVV/
+              |VVVV^^^^^^^^^^^^         |
+             |                    vvvvvv\\
+             |     vvvvvvvVVVVVVVVVVVVVV/
+             |/VVVVVVVVVVVVVVVVVVVVVVVVV|
+             |VVVVVVV^^^^^^^^^^         |
+              |V/                        \\
+              |             vvvvvvvvvvvvv|
+               \  /VVVVVVVVVVVVVVVVVVVVVV\
+                \/VVVVVVVVVVVVVVVVVVVVVVVV\____
+                 |VVVVVVVV^^^^^^^^^^___________)
+             |\__|/ _____ //--------   \\xx/
+             | xx\ /%%%%///   __     __  \\ \\
+             \_xxx %%%%  /   /  \   /  \    |
+             / \x%%%%       ((0) ) ((0) )   |
+            / #/|%%%%        \__/   \__/     \__  ______-------
+            \#/ |%%%%             @@            \/
+              _/%%%%                             |_____
+     ________/|%%%%                              |    -----___
+-----         |%%%%     \___                  __/
+           ___/\%%%%    /  --________________//
+     __----     \%%%%                     ___/
+    /             \%%%%                   _/
+                     \%%%%              _/
+                       \%%%%           /
+                          \%%         |
+                           |%%        |
+    No Auth Code Found
+    Not even a sound
+    No Auth Code Today
+    It is far away
+    Not in a Hat
+    Not in the code
+    Not in the file
+
+if you are seeing this message please enter an AuthCode:
+'''
+
 # Functions
 
 def timestamp():
@@ -441,8 +484,6 @@ def findfile(filename, searchdir):
     for base, dirs, files, in os.walk(searchdir):
         if filename in files:
             return os.path.join(base, filename)
-        else:
-            return False
 
 def find_license_file(filename, searchdir):
     '''
@@ -650,48 +691,6 @@ def stopvm(vmx):
     except IOError as e:
         logger.debug("IOError as %s" % (e))
 
-#TODO: Build OVF detector.
-
-def integrity_checker():
-    '''
-    TODO: Create function that recovers from integrity fails.
-    Function just passes right now.
-    '''
-    pass
-
-def IT_artifact_creator():
-    '''
-    Function creates are appends to installer log file
-    for IT to read
-    '''
-    if system() == "Darwin":
-        if os.path.exists():
-            pass
-        else:
-            pass
-    elif system() == "Windows":
-        if os.path.exists(IT_SCCM_dir + os.sep + IT_artifact_file):
-            try:
-                time_stamp = timestamp()
-                f = open(IT_SCCM_dir + os.sep + IT_artifact_file, "a+")
-                f.write(time_stamp + " - LiaB Install Complete.")
-                f.close()
-            except:
-                logger.debug("Exception occured in Windows IT_Artifact_creator() a+")
-                exit()
-        else:
-            try:
-                time_stamp = timestamp()
-                f = open(IT_SCCM_dir + os.sep + IT_artifact_file, "w+")
-                f.write(time_stamp + " - LiaB Install Complete.")
-                f.close()
-            except:
-                logger.debug("Exception occured in Windows IT_Artifact_creator() w+")
-                exit()
-    else:
-        logger.info("Unsupported OS detected, process will exit.")
-        exit()
-
 def network_loader():
     '''
     Loads network settings for SE Virtual Environment.
@@ -793,21 +792,8 @@ def pan_license(fwip):
                 authcode = open(findfile("vm50auth.txt", getuser()), "r").read().rstrip()
                 logger.debug("Read file vm50auth.txt")
             else:
-                while findfile("vm50auth.txt", getuser()) == False:
-                    print(download_message)
-                    if oscheck == "Darwin":
-                        webbrowser.get(chrome_path).open(vm50auth)
-                        logger.debug("Opened Browser to SourceURL for %s" % (vm50auth))
-                    elif oscheck == "Windows":
-                        webbrowser.get(chrome_path_win).open(vm50auth)
-                        logger.debug("Opened Browser to SourceURL for %s" % (vm50auth))
-                    else:
-                        print("Unsupported OS detected. Script will exit()")
-                        exit()
-                    sleep(60)
-                    if findfile("vm50auth.txt", getuser()):
-                        authcode = open(findfile("vm50auth.txt", getuser()), "r").read().rstrip()
-                        logger.debug("Read file vm50auth.txt")   
+                print(print_authcode_message)
+                authcode = input("ENTER AUTH CODE:")
         except IOError as e:
             logger.debug("IOError as %s" % (e))
             print("")
