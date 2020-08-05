@@ -153,7 +153,7 @@
     "sourceurl": "https://drive.google.com/open?id=1Kbc8-7ZKqAbPBJTITqfKSKPOcUBE0W9h",
     "description": "Expedition setup for Lab in a Box",
     "md5hash": "5cb1269d479aaf91ec0aa61309f5adae",
-    "sha1sum": "ae4b8cfd91d0692756446ba4bab964b355c9a7e6",
+    "sha1sum": "77e3e0fc16d6a6151b1adefd27971d10ff933411",
     "vmx": "pan-expedition.vmx",
     "macos": "/pan-expedition.vmwarevm/",
     "windows": "pan-expedition/",
