@@ -167,8 +167,35 @@ ___________$$$$$$$$
 _$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ___$$$$$$$$$$$$$$$$$$$$$$$$
 _____$$$$$$$$$$$$$$$$$$$$__
-The VM-Series Can take some time
-to boot. Start it NOW.
+We do not auto-start the VM-Series.
+In order for licensing to work you
+need to start the VM50. Do so NOW
+as it takes 5-10 min to boot.
+'''
+start_message_again = '''
+___________((_____))
+____________))___((
+___________((_____))
+____________))___((
+___________((_____))____________$$$$$$
+____________))___((____________$$____$$
+_$$$$$$$$$$$$$$$$$$$$$$$$$$$$$______$$
+__$$$$$$$$Start$$$$$$$$$$$$$$_______$$
+___$$$$$$$$$$the$$$$$$$$$$$________$$
+____$$$$$$VM-50$$$$$$$$$$$________$$
+____$$$$$$$$NOW$$$$$$$$$$$______$$
+_____$$$$$$$$$$$$$$$$$$$$_____$$
+_____$$$$$$$$$$$$$$$$$$$$$$$$$
+______$$$$$$$$$$$$$$$$$$
+_______$$$$$$$$$$$$$$$$
+_________$$$$$$$$$$$$
+___________$$$$$$$$
+_$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+___$$$$$$$$$$$$$$$$$$$$$$$$
+_____$$$$$$$$$$$$$$$$$$$$__
+What the first message was not clear?
+START THE VM-Series, that is why the API
+is not accessible!
 '''
 
 network_configure = r'''
@@ -753,6 +780,7 @@ def syscheck(passkey,fwip):
         return r.status_code
     except requests.exceptions.ConnectionError as e:
         print("Attempted to access API. System not available.")
+        print(start_message)
         
 def pan_license(fwip):
     '''
@@ -780,8 +808,12 @@ def pan_license(fwip):
                 % (auth_results))
             time.sleep(5)
         else:
+            count = 1
             while syscheck(passkey, fwip) != 200:
                 print("VM-Series API not accessible. Waiting 15 Seconds then retrying.")
+                if count == 1:
+                    print(start_message_again)
+                    count = 0
                 time.sleep(15)
                 passkey = api_access_check(fwip)
                 if syscheck(passkey,fwip) == 200:
