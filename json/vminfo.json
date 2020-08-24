@@ -72,14 +72,14 @@
     "password": "Paloalto1!",
     "sourceurl": "https://drive.google.com/open?id=1s3s3arBFkMxbL9LCi4r9I0qySecrnUOs",
     "description": "SSH utility listening on many ports at 192.168.35.132 and OwnCloud on https://192.168.35.136, this is a GUI-less utility designed for DaaS demos.",
-    "md5hash": "4c71b612f21c9a552c3983d1771e3b2e",
-    "sha1sum": "f543e2c379aaf01b1568b9ca285007d85bfe4ba1",
+    "md5hash": "febc0400c761a53e4fce3a416e570832",
+    "sha1sum": "5691515913ee07750680e1972a7c24f2f4d41389",
     "vmx": "linux-utility.vmx",
     "macos": "/linux-utility.vmwarevm/",
     "windows": "/linux-utility/",
     "vmprofile": "https://loop.paloaltonetworks.com/docs/DOC-45576",
-    "version": "3",
-    "fileSize": "8GB"
+    "version": "9",
+    "fileSize": "9GB"
   },
   "pansoc": {
     "name": "pan-soc",
