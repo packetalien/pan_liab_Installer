@@ -523,7 +523,7 @@ def findova(filename):
         elif system() == "Windows":
             if os.path.exists(gstream):
                 logger.debug("Located Google Drive.")
-                for base, dirs, files, in os.walk(gstream):
+                for base, dirs, files, in os.walk(os.path.normpath(gstream)):
                     if filename in files:
                         logger.debug("Found %s" % (os.path.join(base, filename)))
                         return os.path.join(base, filename)
