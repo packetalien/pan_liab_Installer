@@ -537,6 +537,35 @@ def findova(filename):
         print("Catastrophic Failure in findova()")
         logger.info("Catastrophic Error in findova() function.")
 
+def findlic(filename):
+    '''
+    Function searches user directory for file.
+    It returns location/file. 
+
+    Uses os.walk for compatibility.
+    '''
+    try:
+        if system() == "Darwin":
+            home = getuser()
+            for base, dirs, files, in os.walk(home):
+                if filename in files:
+                    logger.debug("Found %s" % (os.path.join(base, filename)))
+                    return os.path.join(base, filename)
+        elif system() == "Windows":
+            if os.path.exists(gstream):
+                logger.debug("Located Google Drive.")
+                for base, dirs, files, in os.walk(os.path.normpath(gstream)):
+                    if filename in files:
+                        logger.debug("Found %s" % (os.path.join(base, filename)))
+                        return os.path.join(base, filename)
+            else:
+                home = getuser()
+                for base, dirs, files, in os.walk(home):
+                    if filename in files:
+                        logger.debug("Found %s" % (os.path.join(base, filename)))
+                        return os.path.join(base, filename)            
+    except:
+
 def dir_check(directory):
     '''
     This function checks if a directory exists.
@@ -809,8 +838,8 @@ def pan_license(fwip):
     ''' 
     try:
         try:
-            if findfile("vm50auth.txt", getuser()):
-                authcode = open(findfile("vm50auth.txt", getuser()), "r").read().rstrip()
+            if findlic("vm50auth.txt"):
+                authcode = open(findlic("vm50auth.txt"), "r").read().rstrip()
                 logger.debug("Read file vm50auth.txt")
             else:
                 print(print_authcode_message)
