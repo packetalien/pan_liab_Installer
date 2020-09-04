@@ -565,6 +565,8 @@ def findlic(filename):
                         logger.debug("Found %s" % (os.path.join(base, filename)))
                         return os.path.join(base, filename)            
     except:
+        print("Catastrophic Failure in findlic()")
+        logger.info("Catastrophic Error in findlic() function.")
 
 def dir_check(directory):
     '''
