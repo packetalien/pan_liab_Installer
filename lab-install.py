@@ -840,12 +840,24 @@ def pan_license(fwip):
     ''' 
     try:
         try:
-            if findlic("vm50auth.txt"):
-                authcode = open(findlic("vm50auth.txt"), "r").read().rstrip()
-                logger.debug("Read file vm50auth.txt")
+            if system() == "Darwin":
+                if findfile("vm50auth.txt",getuser() + os.sep + r"Google Drive File Stream" + os.sep + r"My Drive" + os.sep + r"Beta"):
+                    authcode = open(findlic("vm50auth.txt"), "r").read().rstrip()
+                    logger.debug("Read file vm50auth.txt")
+                else:
+                    print(print_authcode_message)
+                    authcode = input("ENTER AUTH CODE:")
+            elif system() == "Windows":
+                if findfile("vm50auth.txt",gstream):
+                    authcode = open(findlic("vm50auth.txt"), "r").read().rstrip()
+                    logger.debug("Read file vm50auth.txt")
+                else:
+                    print(print_authcode_message)
+                    authcode = input("ENTER AUTH CODE:")
             else:
-                print(print_authcode_message)
-                authcode = input("ENTER AUTH CODE:")
+                print("Unsupported OS Detected, Exiting...")
+                logger.debug("Unsupported OS Detected %s" % (system()))
+                exit()
         except IOError as e:
             logger.debug("IOError as %s" % (e))
             print("")
