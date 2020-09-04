@@ -784,8 +784,8 @@ def set_auth_code(passkey, fwip, authcode):
         print("Set Authcode Function returned: %s" % r.text)
         return r.text
     except requests.exceptions.ConnectionError as e:
-        print("There was a problem with setting the authCode.")
-        print("If this is helpful the error was captured as: " + e)
+        print("There may have been a problem with setting the authCode.")
+        print("Please check your VM-Series to validate licensing.")
         logger.debug("Exception as %s" % e)
 
 def fetchlic(passkey):
@@ -839,10 +839,12 @@ def pan_license(fwip):
     TODO: Add Hash Checking for vm50auth.txt
     ''' 
     try:
+        print("Attempting to licenses vm-series.")
         try:
+            print("starting os check.")
             if system() == "Darwin":
-                if findfile("vm50auth.txt",getuser() + os.sep + r"Google Drive File Stream" + os.sep + r"My Drive" + os.sep + r"Beta"):
-                    authcode = open(findlic("vm50auth.txt"), "r").read().rstrip()
+                if findfile("vm50auth.txt",getuser() + os.sep + str(r"Google Drive File Stream" + os.sep + r"My Drive" + os.sep + r"Beta")):
+                    authcode = str(open(findfile("vm50auth.txt",getuser() + os.sep + str(r"Google Drive File Stream" + os.sep + r"My Drive" + os.sep + r"Beta")), "r").read().rstrip())
                     logger.debug("Read file vm50auth.txt")
                 else:
                     print(print_authcode_message)
@@ -860,7 +862,7 @@ def pan_license(fwip):
                 exit()
         except IOError as e:
             logger.debug("IOError as %s" % (e))
-            print("")
+            print("IOerror")
         logger.info("Starting licensing process.")
         passkey = api_access_check(fwip)
         if syscheck(passkey,fwip) == 200: 
@@ -873,11 +875,11 @@ def pan_license(fwip):
         else:
             count = 1
             while syscheck(passkey, fwip) != 200:
-                print("VM-Series API not accessible. Waiting 15 Seconds then retrying.")
+                print("VM-Series API not accessible. Waiting 30 Seconds then retrying.")
                 if count == 1:
                     print(start_message_again)
                     count = 0
-                time.sleep(15)
+                time.sleep(30)
                 passkey = api_access_check(fwip)
                 if syscheck(passkey,fwip) == 200:
                     logger.debug("Set Support Key temporarily for CSP 245")
