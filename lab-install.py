@@ -109,6 +109,7 @@ vm50auth = "https://drive.google.com/file/d/1PWEnzE6S4AsRPt1xeDMjENCAZD-tKpoS/vi
 vmware_dir_windows = "Documents\Virtual Machines"
 vmware_dir_macos = "Virtual Machines.localized"
 IT_SCCM_dir = "C:\ProgramData"
+gstream = "g:/"
 
 # Legacy Directory (deprecated)
 legacy_dir = "IT-Managed-VMs"
@@ -512,10 +513,29 @@ def findova(filename):
 
     Uses os.walk for compatibility.
     '''
-    home = getuser()
-    for base, dirs, files, in os.walk(home):
-        if filename in files:
-            return os.path.join(base, filename)
+    try:
+        if system() == "Darwin":
+            home = getuser()
+            for base, dirs, files, in os.walk(home):
+                if filename in files:
+                    logger.debug("Found %s" % (os.path.join(base, filename)))
+                    return os.path.join(base, filename)
+        elif system() == "Windows":
+            if os.path.exists(gstream):
+                logger.debug("Located Google Drive.")
+                for base, dirs, files, in os.walk(gstream):
+                    if filename in files:
+                        logger.debug("Found %s" % (os.path.join(base, filename)))
+                        return os.path.join(base, filename)
+            else:
+                home = getuser()
+                for base, dirs, files, in os.walk(home):
+                    if filename in files:
+                        logger.debug("Found %s" % (os.path.join(base, filename)))
+                        return os.path.join(base, filename)            
+    except:
+        print("Catastrophic Failure in findova()")
+        logger.info("Catastrophic Error in findova() function.")
 
 def dir_check(directory):
     '''
