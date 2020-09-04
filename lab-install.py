@@ -515,7 +515,7 @@ def findova(filename):
     '''
     try:
         if system() == "Darwin":
-            home = getuser()
+            home = getuser() + os.sep + r"Google Drive File Stream"
             for base, dirs, files, in os.walk(home):
                 if filename in files:
                     logger.debug("Found %s" % (os.path.join(base, filename)))
