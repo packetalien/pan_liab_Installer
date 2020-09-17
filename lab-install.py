@@ -38,7 +38,12 @@ import time
 import getpass
 import hashlib
 import fnmatch
-import requests
+try:
+    import requests
+except ImportError:
+    print("Trying to Install required module: requests\n")
+    print("If this fails try: python -m pip install requests.\n")
+    os.system('python -m pip install requests')
 import logging
 import webbrowser
 import shutil
