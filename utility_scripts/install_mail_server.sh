@@ -47,9 +47,16 @@ sudo sed -i 's/#ssl_prefer_server_ciphers = no/ssl_prefer_server_ciphers = yes/g
 
 echo "setting up dovecot keys and certs"
 echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
 echo "Configuring and generating certs."
 echo "This could take as long as 10 min"
 echo "so be patient."
+echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
 sudo openssl dhparam -out /etc/dovecot/dh.pem 4096
 echo "*****************************************"
 sudo rm -rf /etc/pki/dovecot/certs/dovecot.pem
