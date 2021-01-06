@@ -104,7 +104,7 @@ echo "*****************************************"
 echo "Adding GoPhish and victim users..."
 sudo adduser clickme
 sudo echo "Paloalto1!" | passwd clickme --stdin
-echo "Created clickme, passwword: Paloalto1!"
+echo "Created clickme, password: Paloalto1!"
 sudo adduser evilbit
 sudo echo "Paloalto1!" | passwd evilbit --stdin
 echo "Created badactor, password: Paloalto1!"
