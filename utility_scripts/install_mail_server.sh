@@ -8,9 +8,8 @@
 
 # Installing postfix
 echo "installing postfix..."
-sudo dnf -y install postfix
 echo "installing dovecot (IMAP(s)/POP3(s)"
-sudo dnf -y install dovecot
+sudo dnf -y install postfix dovecot
 echo "starting postfix..."
 sudo systemctl start postfix
 echo "enabling postfix..."
@@ -25,8 +24,7 @@ sudo sed -i 's/#myorigin = $myhostname/myorigin = $myhostname/g' /etc/postfix/ma
 sudo sed -i 's/inet_interfaces = localhost/#inet_interfaces = localhost/g' /etc/postfix/main.cf
 sudo sed -i 's/#inet_interfaces = $myhostname/inet_interfaces = $myhostname/g' /etc/postfix/main.cf
 sudo sed -i -e '$a192.168.35.134 mail.demoinabox.net' /etc/hosts
-sudo sed -i "s/smtpd_tls_cert_file = \/etc\/pki\/tls\/certs\/postfix.pem|smtpd_tls_cert_file = \/etc\/pki\/tls\/certs\/diab_wildcard\.crt" /etc/postfix/main.cf
-sudo sed -i -e '$asmtpd_tls_key_file=\/etc\/pki\/tls\/private\/diab_wildcard\.key' /etc/postfix/main.cf
+echo "Copying over built in keys as a backup."
 sudo cp /etc/pki/tls/private/diab_wildcard.key /etc/pki/tls/private/postfix.key
 sudo cp /etc/pki/tls/certs/diab_wildcard.crt /etc/pki/tls/certs/postfix.pem
 sudo sed -i -e '$asmtpd_use_tls=yes' /etc/postfix/main.cf
@@ -46,19 +44,6 @@ sudo sed -i 's/#ssl_prefer_server_ciphers = no/ssl_prefer_server_ciphers = yes/g
 
 
 echo "setting up dovecot keys and certs"
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-echo "Configuring and generating certs."
-echo "This could take as long as 10 min"
-echo "so be patient."
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-sudo openssl dhparam -out /etc/dovecot/dh.pem 4096
-echo "*****************************************"
 sudo rm -rf /etc/pki/dovecot/certs/dovecot.pem
 sudo rm -rf /etc/pki/dovecot/private/dovecot.pem
 echo "Copying keys to default, just in case. Properly configure with postconf"
@@ -124,3 +109,19 @@ sudo adduser evilbit
 sudo echo "Paloalto1!" | passwd evilbit --stdin
 echo "Created badactor, password: Paloalto1!"
 echo "*****************************************"
+
+echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
+echo "Configuring and generating certs."
+echo "This could take as long as 10 min"
+echo "so be patient."
+echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
+echo "*****************************************"
+sudo openssl dhparam -out /etc/dovecot/dh.pem 4096
+echo "*****************************************"
+sudo systemctl restart dovecot
+sudo systemctl restart postfix
