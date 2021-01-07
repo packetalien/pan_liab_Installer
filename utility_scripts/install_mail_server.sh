@@ -41,6 +41,7 @@ sudo cp /etc/pki/tls/private/diab_wildcard.key /etc/pki/dovecot/private/dovecot.
 sudo cp /etc/pki/tls/certs/diab_wildcard.crt /etc/pki/dovecot/certs/dovecot.pem
 echo "Adding dovecot to mail group"
 sudo gpasswd -a dovecot mail
+sudo gpasswd -a postfix mail
 sudo chmod 0600 /var/mail/*
 
 echo "*****************************************"
