@@ -16,7 +16,7 @@ echo "enabling postfix..."
 sudo systemctl enable postfix
 
 echo "Adding host entry in /etc/hosts for mail.demoinabox.net"
-sudo sed -i -e '$a192.168.35.134 mail.demoinabox.net' /etc/hosts
+sudo sed -i '$a192.168.35.134 mail.demoinabox.net' /etc/hosts
 
 echo "Configuring /etc/postfix/main.cf for Demo in a Box..."
 
@@ -46,10 +46,13 @@ sudo cp /etc/pki/tls/certs/diab_wildcard.crt /etc/pki/dovecot/certs/dovecot.pem
 echo "configuring dovecot.conf"
 echo "Added protocols imap and pop3"
 echo "adding listiner at 192.168.35.134"
+protocols = imap pop3 lmtp submission
+sudo sed -i 's/protocols = imap pop3 lmtp submission/#protocols = imap pop3 lmtp submission/g' /etc/dovecot/dovecot.conf
 sudo sed -i 's/#protocols = imap pop3/protocols = imap pop3/g' /etc/dovecot/dovecot.conf
-sudo sed -i -e '31alisten = 192.168.35.134, ::' /etc/dovecot/dovecot.conf
+sudo sed -i '24aprotocols = imap pop3' /etc/dovecot/dovecot.conf
+sudo sed -i '31alisten = 192.168.35.134, ::' /etc/dovecot/dovecot.conf
 echo "Configuring 10-mail.comf"
-sudo sed -i '30mail_location = mbox:~/mail:INBOX=/var/mail/%u' /etc/dovecot/conf.d/10-mail.conf
+sudo sed -i '30amail_location = mbox:~/mail:INBOX=/var/mail/%u' /etc/dovecot/conf.d/10-mail.conf
 sudo sed -i '116amail_privileged_group = mail' /etc/dovecot/conf.d/10-mail.conf
 echo "Configuring 10-auth.conf for dovecot"
 sudo sed -i 's/auth_mechanisms = plain/auth_mechanisms = plain login/g' /etc/dovecot/conf.d/10-auth.conf
@@ -118,19 +121,19 @@ sudo echo "Paloalto1!" | passwd evilbit --stdin
 echo "Created badactor, password: Paloalto1!"
 echo "*****************************************"
 
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-echo "Configuring and generating certs."
-echo "This could take as long as 10 min"
-echo "so be patient."
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-echo "*****************************************"
-sudo openssl dhparam -out /etc/dovecot/dh.pem 4096
-echo "*****************************************"
+#echo "*****************************************"
+#echo "*****************************************"
+#echo "*****************************************"
+#echo "*****************************************"
+#echo "Configuring and generating certs."
+#echo "This could take as long as 10 min"
+#echo "so be patient."
+#echo "*****************************************"
+#echo "*****************************************"
+#echo "*****************************************"
+#echo "*****************************************"
+#sudo openssl dhparam -out /etc/dovecot/dh.pem 4096
+#echo "*****************************************"
 
 echo "starting and enabling dovecot"
 sudo systemctl start dovecot
