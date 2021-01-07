@@ -24,18 +24,10 @@ tar -zxvf mailserver.tar.gz
 sudo rm -rf /etc/postfix/main.cf
 sudo rm -rf /etc/postfix/master.cf
 sudo rm -rf /etc/dovecot/dovecot.conf
-sudo rm -rf /etc/dovecot/conf.d/10-auth.conf
-sudo rm -rf /etc/dovecot/conf.d/10-ssl.conf
-sudo rm -rf /etc/dovecot/conf.d/10-mail.conf
-sudo rm -rf /etc/dovecot/conf.d/10-master.conf
-sudo rm -rf /etc/dovecot/conf.d/15-mailboxes.conf
+sudo rm -rf /etc/dovecot/conf.d/
+tar -zxvf ./mailserver/conf.d.tar.gz -C /etc/dovecot
 sudo cp ./mailserver/main.cf /etc/postfix/main.cf
 sudo cp ./mailserver/master.cf /etc/postfix/master.cf
-sudo cp ./mailserver/10-auth.conf /etc/dovecot/conf.d/10-auth.conf
-sudo cp ./mailserver/10-ssl.conf /etc/dovecot/conf.d/10-ssl.conf
-sudo cp ./mailserver/10-mail.conf /etc/dovecot/conf.d/10-mail.conf
-sudo cp ./mailserver/10-master.conf /etc/dovecot/conf.d/10-master.conf
-sudo cp ./mailserver/15-mailboxes.conf /etc/dovecot/conf.d/15-mailboxes.conf
 sudo cp ./mailserver/dovecot.conf /etc/dovecot/dovecot.conf
 
 sudo cp ./mailserver/dh.pem /etc/dovecot/dh.pem
