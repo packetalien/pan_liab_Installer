@@ -25,7 +25,7 @@ sudo rm -rf /etc/postfix/main.cf
 sudo rm -rf /etc/postfix/master.cf
 sudo rm -rf /etc/dovecot/dovecot.conf
 sudo rm -rf /etc/dovecot/conf.d/
-tar -zxvf ./mailserver/conf.d.tar.gz -C /etc/dovecot
+sudo tar -zxvf ./mailserver/conf.d.tar.gz -C /etc/dovecot
 sudo cp ./mailserver/main.cf /etc/postfix/main.cf
 sudo cp ./mailserver/master.cf /etc/postfix/master.cf
 sudo cp ./mailserver/dovecot.conf /etc/dovecot/dovecot.conf
