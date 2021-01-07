@@ -21,16 +21,10 @@ echo "Getting the server config files."
 curl -k https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/utility_scripts/mailserver.tar.gz -o mailserver.tar.gz
 echo "Unpacking the server config files."
 tar -zxvf mailserver.tar.gz
-sudo rm -rf /etc/postfix/main.cf
-sudo rm -rf /etc/postfix/master.cf
-sudo rm -rf /etc/dovecot/dovecot.conf
-sudo rm -rf /etc/dovecot/conf.d/
-sudo tar -zxvf /home/panse/mailserver/conf.d.tar.gz -C /etc/dovecot
-sudo cp ./mailserver/main.cf /etc/postfix/main.cf
-sudo cp ./mailserver/master.cf /etc/postfix/master.cf
-sudo cp ./mailserver/dovecot.conf /etc/dovecot/dovecot.conf
-
-sudo cp ./mailserver/dh.pem /etc/dovecot/dh.pem
+sudo rm -rf /etc/dovecot/
+sudo rm -rf /etc/postfix/
+sudo tar -zxvf /home/panse/mailserver/dovecot.tar.gz -C /etc/
+sudo tar -zxvf /home/panse/mailserver/postfix.tar.gz -C /etc/
 
 echo "Copying over postfix built in keys as a backup."
 sudo cp /etc/pki/tls/private/diab_wildcard.key /etc/pki/tls/private/postfix.key
@@ -77,9 +71,4 @@ echo "If not contact #labinabox on slack"
 echo "*****************************************"
 sudo systemctl restart postfix
 sudo systemctl enable postfix
-echo "Copied a pre-made dh.pem key!!!WARNING!!!"
-echo "This is for performance reasons ONLY."
-echo "If you wish to run your own key."
-echo "run the command sudo openssl dhparam -out /etc/dovecot/dh.pem 4096"
-echo "This will take over 15 minutes!"
 echo "For questions please contact #labinabox"
