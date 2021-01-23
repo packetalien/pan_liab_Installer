@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # Copyright (c) 2018, Palo Alto Networks
 #
 # Permission to use, copy, modify, and/or distribute this software for any
