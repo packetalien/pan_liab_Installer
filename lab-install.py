@@ -219,9 +219,11 @@ network_configure = r'''
                         |||             || ||      || ||
 ------------------------|||-------------||-||------||-||-------
                         |__>            || ||      || ||
-Please configure your Windows Network Settings.
+If you have not configured Windows Network Settings.
 You will need to import the defaultse file or the above
 will be the case :).
+Go to:
+https://docs.google.com/document/d/1K9lvADAzlJa4R4S4G6aohYcT2t0BqYEK_183Oq7LRIs
 '''
 
 print_authcode_message = r'''
@@ -766,11 +768,7 @@ def network_loader():
             call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
         elif system() == "Windows":
             print("VMware Workstation import process is in the GUI.")
-            print("The installer will bring up the instructions")
-            print("Please import it in Virtual Networks Editor.")
-            print("\nOpening instructions in 5 seconds.")
-            time.sleep(5)
-            webbrowser.get(chrome_path_win).open(win_network_url)
+            print("This process should have already been completed.")
             print(network_configure)
         else:
             print("Unsupported OS detected, program will exit.")
