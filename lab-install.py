@@ -823,7 +823,9 @@ def api_access_check(fwip):
             print("Access failed, do you have a custom admin password?")
             return passkey8
     except requests.exceptions.ConnectionError as e:
-        print("Attempted to access API. System not available.")
+        print("Attempted to access API. Network or System not available.")
+        print("Please license VM-Series in the GUI.")
+        print("https://192.168.55.10")
 
 def syscheck(passkey,fwip):
     try:
