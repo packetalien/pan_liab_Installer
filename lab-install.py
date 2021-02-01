@@ -878,11 +878,12 @@ def pan_license(fwip):
         else:
             count = 1
             while syscheck(passkey, fwip) != 200:
-                print("VM-Series API not accessible. Waiting 30 Seconds then retrying.")
+                print("Did you start the VM-Series?")
+                print("VM-Series API is not available. Waiting 60 Seconds then retrying.")
                 if count == 1:
                     print(start_message_again)
                     count = 0
-                time.sleep(30)
+                time.sleep(60)
                 passkey = api_access_check(fwip)
                 if syscheck(passkey,fwip) == 200:
                     logger.debug("Set Support Key temporarily for CSP 245")
