@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2018, Palo Alto Networks
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -124,7 +124,7 @@ legacy_dir = "IT-Managed-VMs"
 chrome_path = "open -a /Applications/Google\ Chrome.app %s"
 chrome_path_win = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 vnetlib_windows = r"c:\Program Files (x86)\VMware\VMware Workstation\vnetlib64.exe"
-python_mac = "/usr/bin/python"
+python_mac = "/usr/bin/python3"
 
 # Files TODO: Move to conf file.
 # Files TODO: Normalize naming.
