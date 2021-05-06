@@ -38,17 +38,15 @@ import time
 import getpass
 import hashlib
 import fnmatch
-try:
-    import requests
-except ImportError:
-    print("Trying to Install required module: requests\n")
-    print("If this fails try: python -m pip install requests.\n")
-    os.system('python -m pip install requests')
+import platform
 import logging
 import webbrowser
 import shutil
 import json
 import glob
+import urllib
+from urllib import request
+from urllib.request import ssl
 from time import strftime
 from platform import system
 from subprocess import call
@@ -57,8 +55,6 @@ from logging.handlers import RotatingFileHandler
 from os.path import expanduser
 from os import path
 from shutil import copy
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 '''
@@ -108,6 +104,8 @@ pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZH
 liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc2uqicV0ziW4"
 config_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/config.json"
 vm50auth = "https://drive.google.com/file/d/1PWEnzE6S4AsRPt1xeDMjENCAZD-tKpoS/view?usp=sharing"
+url = 'https://raw.githubusercontent.com/packetalien/fusion-network-config/master/fusion-vmnet-config.txt'
+
 
 # TODO: Move all of this to a CONF file.
 # Default Directories
@@ -124,7 +122,7 @@ legacy_dir = "IT-Managed-VMs"
 chrome_path = "open -a /Applications/Google\ Chrome.app %s"
 chrome_path_win = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 vnetlib_windows = r"c:\Program Files (x86)\VMware\VMware Workstation\vnetlib64.exe"
-python_mac = "/usr/bin/python"
+
 
 # Files TODO: Move to conf file.
 # Files TODO: Normalize naming.
@@ -138,6 +136,8 @@ msft_dc_filename = "msft-dc.vmx"
 msft_rodc_filename = "msft-rodc.vmx"
 IT_artifact_file = "liab-installed.txt"
 pan_license_filename = "pan-license-vmseries.py"
+vmnetfile = "fusion-vmnet-config.txt"
+funsioncfgfile = 'networking'
 
 # Hard Coded hashes, TODO: Move to conf file.
 vminfo_sha = "fa2ee715c3fc4891124aa42131ad8186d8abbcaa"
@@ -150,6 +150,9 @@ pan_license_hash = "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21"
 # API Keys for VM-Series
 passkey8 = "LUFRPT10VGJKTEV6a0R4L1JXd0ZmbmNvdUEwa25wMlU9d0N5d292d2FXNXBBeEFBUW5pV2xoZz09"
 passkey9 = "LUFRPT1tZVhOVFFMUERLZk5qd09Kd3FLT3FMcXRwOTg9Y2NOdGxCM01PZEhRcFhZem94MXhzeUp1eW54RWxZbTZvSCtsUFJvMTlTQU1qbUVGWGNtdjZ0aWFGZENGQUhVdA=="
+
+# This is BAD. We are not verifying Certs. Setting this for urllib.
+cert_context = ssl.SSLContext()
 
 # Start Up VM Variable
 start_message = '''
@@ -280,30 +283,21 @@ def timestamp():
     stamp = strftime("%Y%m%d-%H%M%S")
     return stamp
 
+
 def save(url, filename):
     '''
-    Simple download function based on requests. Takes in
+    Simple download function based on request from urllib. Takes in
     a url and a filename. Saves to directory filemane indicates.
     '''
-    with open(filename, "wb") as f:
-        print("Downloading %s" % filename)
-        logger.debug("Downloading %s" % filename) 
-        response = requests.get(url, stream=True, verify=False)
-        total_length = response.headers.get('content-length')
-        if total_length is None: # no content length header
-            f.write(response.content)
-        else:
-            dl = 0
-            total_length = int(total_length)
-            for data in response.iter_content(chunk_size=4096):
-                dl += len(data)
-                f.write(data)
-                done = int(50 * dl / total_length)
-                sys.stdout.write("\r[%s%s]" %
-                                 ('*' * done, ' ' * (50-done)) )    
-                sys.stdout.flush()
-    print("\n")
-
+    try:
+        url = request.urlopen(url)
+        with open(filename, "wb") as f:
+            f.write(url.read())
+    except:
+        logger.debug("ERROR: Save function failed.")
+        print("Save function failed to download. Exiting to avoid further failure.")
+        exit
+        
 def sha1sum(filename):
     '''
     Takes in a filename and returns a sha1 summary hash.
@@ -752,6 +746,64 @@ def stopvm(vmx):
         logger.debug("Succesfully deleted %s" % (vmx))
     except IOError as e:
         logger.debug("IOError as %s" % (e))
+def filecheck(filename):
+    '''
+    Check for file.
+    Returns True or False.
+    '''
+    for base, dirs, files, in os.walk(getuser()):
+        if filename in files:
+            return True
+
+def filecheckcfg(filename):
+    basedir = '/Library/Preferences/'
+    searchdir = basedir
+    for base, dirs, files, in os.walk(searchdir):
+        if filename in files:
+            return True
+
+def vmnetconfig(filename):
+    vmnetworkingdir = getuser() + os.sep + filename
+    fusionnetdir = '/Library/Preferences/VMware Fusion/'
+    fusionnetbuild = fusionnetdir + "networking"
+    logger.debug("Executing cp function")
+    call(["cp","-f",vmnetworkingdir,fusionnetbuild])
+
+def backupcurrentconfig(filename):
+    fusionnetdir = '/Library/Preferences/VMware Fusion/'
+    fusionnetbuild = fusionnetdir + "networking"
+    if filecheckcfg(filename):
+        fusionbak = fusionnetbuild + filetimestamp()
+        logger.debug("Backed up Fusion to file: %s"% fusionbak)
+        call(["cp","-f",fusionnetbuild,fusionbak])
+    else:
+        logger.debug(
+            "Ran into an issue locating the networking config file. Is Fusion installed?"
+            )
+        print(
+            "File does not exists, have you started/installed VMWare Fusion? \
+                Please join #labinabox on Slack for troubleshooting and support."
+                )
+
+def filetimestamp():
+    filetimestamp = time.strftime("%Y%m%d-%H%M%S")
+    tagstamp = filetimestamp + ".bak"
+    logger.debug("Returning %s" % tagstamp)
+    return tagstamp
+
+def get_macos_version():
+    '''
+    Gets MacOS Version.
+    Returns a Float.
+    '''
+    try:
+        v, _, _ = platform.mac_ver()
+        v = float('.'.join(v.split('.')[:2]))
+        return v
+    except:
+        logger.info("Could not find macos version.")
+        print("ERROR: Could not get MacOS Version.")
+        
 
 def network_loader():
     '''
@@ -761,11 +813,18 @@ def network_loader():
     ''' 
     try:
         if system() == "Darwin":
-            logger.info("Going to get network loader script. %s" % (fusion_url))
-            save(fusion_url, getuser() + os.sep + fusion_loader)
-            print("{:-^30s}".format("Automatically Configuring Network."))
-            print("{:-^30s}".format("Please enter SSO password."))
-            call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
+            if get_macos_version() <= 10.99:
+                logger.info("Going to get network loader script. %s" % (fusion_url))
+                save(fusion_url, getuser() + os.sep + fusion_loader)
+                print("{:-^30s}".format("Automatically Configuring Network."))
+                print("{:-^30s}".format("Please enter SSO password."))
+                call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
+            elif get_macos_version() > 10.99:
+                logger.info("Going to get network loader script. %s" % (fusion_url))
+                save(fusion_url, getuser() + os.sep + fusion_loader)
+                print("{:-^30s}".format("Automatically Configuring Network."))
+                print("{:-^30s}".format("Please enter SSO password."))
+                call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
         elif system() == "Windows":
             print("VMware Workstation import process is in the GUI.")
             print("This process should have already been completed.")
@@ -782,25 +841,25 @@ def set_auth_code(passkey, fwip, authcode):
         ctype = "op"
         cmd = "<request><license><fetch><auth-code>%s</auth-code></fetch></license></request>" % (authcode)
         call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
-        r = requests.get(call, verify=False)
-        logger.debug("set_auth_code() returned %s" % r.text)
-        print("Set Authcode Function returned: %s" % r.text)
-        return r.text
-    except requests.exceptions.ConnectionError as e:
+        r = request.urlopen(call, context=cert_context).read()
+        logger.debug("set_auth_code() returned %s" % r)
+        print("Set Authcode Function returned: %s" % r)
+        return r
+    except:
         print("There may have been a problem with setting the authCode.")
         print("Please check your VM-Series to validate licensing.")
-        logger.debug("Exception as %s" % e)
+        logger.debug("Exception has occured while setting the authcode.")
 
 def fetchlic(passkey):
     try:
         ctype = "op"
         cmd = "<request><license><fetch/></license></request>"
         call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
-        r = requests.get(call, verify=False)
+        r = request.urlopen(call, context=cert_context).read()
         return r.text
-    except requests.exceptions.ConnectionError as e:
+    except:
         print("There was a problem with fetching licenses from the support server.")
-        print("If this is helpful the error was captured as: " + e)
+        logger.debug("Error while fetching the license.")
 
 def api_access_check(fwip):
     try:
@@ -822,7 +881,7 @@ def api_access_check(fwip):
         else:
             print("Access failed, do you have a custom admin password?")
             return passkey8
-    except requests.exceptions.ConnectionError as e:
+    except:
         print("Attempted to access API. Network or System not available.")
         print("Please license VM-Series in the GUI.")
         print("https://192.168.55.10")
@@ -832,10 +891,10 @@ def syscheck(passkey,fwip):
         ctype = "op"
         cmd = "<show><system><info></info></system></show>"
         call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
-        r = requests.get(call, verify=False)
-        return r.status_code
-    except requests.exceptions.ConnectionError as e:
-        print("Attempted to access API. System not available.")
+        r = request.urlopen(call, context=cert_context).getcode()
+        return r
+    except request.HTTPDefaultErrorHandler as e:
+        print("Attempted to access API. System not availableI.")
         print(start_message)
         
 def pan_license(fwip):
@@ -900,7 +959,7 @@ def pan_license(fwip):
 def main():
     oscheck = system()
     try:
-        vminfo = getvminfo(vminfo_url, vminfo_filename)
+        vminfo = json.loads(request.urlopen(vminfo_url).read())
         network_loader()
         for each in vminfo:
             if findova(vminfo.get(each).get('ova')):
