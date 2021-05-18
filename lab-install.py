@@ -104,7 +104,7 @@ pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZH
 liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc2uqicV0ziW4"
 config_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/config.json"
 vm50auth = "https://drive.google.com/file/d/1PWEnzE6S4AsRPt1xeDMjENCAZD-tKpoS/view?usp=sharing"
-url = 'https://raw.githubusercontent.com/packetalien/fusion-network-config/master/fusion-vmnet-config.txt'
+fusion_config = 'https://raw.githubusercontent.com/packetalien/fusion-network-config/master/fusion-vmnet-config.txt'
 
 
 # TODO: Move all of this to a CONF file.
@@ -126,7 +126,6 @@ vnetlib_windows = r"c:\Program Files (x86)\VMware\VMware Workstation\vnetlib64.e
 
 # Files TODO: Move to conf file.
 # Files TODO: Normalize naming.
-vmnetfile = "fusion-vmnet-config.txt"
 fusion_loader = 'vmnet-configure.py'
 workstationcfgfile = "defaultse"
 vminfo_filename = "vminfo.json"
@@ -137,7 +136,7 @@ msft_rodc_filename = "msft-rodc.vmx"
 IT_artifact_file = "liab-installed.txt"
 pan_license_filename = "pan-license-vmseries.py"
 vmnetfile = "fusion-vmnet-config.txt"
-funsioncfgfile = 'networking'
+fusioncfgfile = 'networking'
 
 # Hard Coded hashes, TODO: Move to conf file.
 vminfo_sha = "fa2ee715c3fc4891124aa42131ad8186d8abbcaa"
@@ -296,7 +295,7 @@ def save(url, filename):
     except:
         logger.debug("ERROR: Save function failed.")
         print("Save function failed to download. Exiting to avoid further failure.")
-        exit
+        exit()
         
 def sha1sum(filename):
     '''
@@ -404,7 +403,7 @@ def get_vmx(url, filename):
     '''
     try:
         if system() == "Darwin":
-            print("{:-^30s}".format("Automatically Configurating vmnets."))
+            print("{:-^30s}".format("Automatically Configuring virtual machine vmnets."))
             print("\n")
             print("Getting preconfigured vmx file.")
             logger.debug(url)
@@ -422,7 +421,7 @@ def get_vmx(url, filename):
             logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
             os.remove(getuser() + os.sep + filename)
         elif system() == "Windows":
-            print("{:-^30s}".format("Automatically Configurating vmnets."))
+            print("{:-^30s}".format("Automatically Configuring virtual machine vmnets."))
             print("\n")
             print("Getting preconfigured vmx file.")
             logger.debug(url)
@@ -489,25 +488,9 @@ def findfile(filename, searchdir):
     '''
     for base, dirs, files, in os.walk(searchdir):
         if filename in files:
-            return os.path.join(base, filename)
+            return os.path.join(base, filename)       
 
-def find_license_file(filename, searchdir):
-    '''
-    Function searches user directory for
-    pan-license-vmseries.py.
-    It compares to the file HASH.
-    
-    It returns location/file. 
-    
-    Uses os.walk for compatibility.
-    '''
-    for base, dirs, files, in os.walk(searchdir):
-        if filename in files:
-            return os.path.join(base, filename)
-        
-# TODO: Update with pathlib.Path.rglob after moving to 3.X        
-
-def findova(filename):
+def findgdrive(filename):
     '''
     Function searches user directory for file.
     It returns location/file. 
@@ -535,8 +518,8 @@ def findova(filename):
                         logger.debug("Found %s" % (os.path.join(base, filename)))
                         return os.path.join(base, filename)            
     except:
-        print("Catastrophic Failure in findova()")
-        logger.info("Catastrophic Error in findova() function.")
+        print("Catastrophic Failure in findgdrive()")
+        logger.info("Catastrophic Error in findgdrive() function.")
 
 def findlic(filename):
     '''
@@ -763,19 +746,26 @@ def filecheckcfg(filename):
             return True
 
 def vmnetconfig(filename):
-    vmnetworkingdir = getuser() + os.sep + filename
-    fusionnetdir = '/Library/Preferences/VMware Fusion/'
-    fusionnetbuild = fusionnetdir + "networking"
-    logger.debug("Executing cp function")
-    call(["cp","-f",vmnetworkingdir,fusionnetbuild])
+    try:
+        fusionnetdir = '/Library/Preferences/VMware Fusion/'
+        fusionnetbuild = fusionnetdir + "networking"
+        logger.debug("Trying to copy" % (fusionnetbuild))
+        call(["sudo","cp","-f",findgdrive(filename),fusionnetbuild])
+    except:
+        print("Failed to copy networking config file.")
+        logger.debug("Catastrophic failure in automatic networking config.")
 
 def backupcurrentconfig(filename):
     fusionnetdir = '/Library/Preferences/VMware Fusion/'
     fusionnetbuild = fusionnetdir + "networking"
     if filecheckcfg(filename):
         fusionbak = fusionnetbuild + filetimestamp()
-        logger.debug("Backed up Fusion to file: %s"% fusionbak)
-        call(["cp","-f",fusionnetbuild,fusionbak])
+        logger.debug("Backed up Fusion to file: %s" % fusionbak)
+        try:
+            call(["sudo","cp","-f",fusionnetbuild,fusionbak])
+        except:
+            print("Error occred backing up network config.")
+            logger.debug("Error in backupcurrentnetconfig().")
     else:
         logger.debug(
             "Ran into an issue locating the networking config file. Is Fusion installed?"
@@ -786,10 +776,16 @@ def backupcurrentconfig(filename):
                 )
 
 def filetimestamp():
-    filetimestamp = time.strftime("%Y%m%d-%H%M%S")
-    tagstamp = filetimestamp + ".bak"
-    logger.debug("Returning %s" % tagstamp)
-    return tagstamp
+    '''
+    Creates a timestamp for file backups.
+    '''
+    try:
+        filetimestamp = time.strftime("%Y%m%d-%H%M%S")
+        tagstamp = filetimestamp + ".bak"
+        logger.debug("Returning %s" % tagstamp)
+        return tagstamp
+    except:
+        logger.debug("Error creting timestamp in filetimestamp().")
 
 def get_macos_version():
     '''
@@ -814,17 +810,26 @@ def network_loader():
     try:
         if system() == "Darwin":
             if get_macos_version() <= 10.99:
-                logger.info("Going to get network loader script. %s" % (fusion_url))
-                save(fusion_url, getuser() + os.sep + fusion_loader)
-                print("{:-^30s}".format("Automatically Configuring Network."))
-                print("{:-^30s}".format("Please enter SSO password."))
-                call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
+                try:
+                    backupcurrentconfig(fusioncfgfile)
+                    vmnetconfig(vmnetfile)
+                    call(["sudo","/Applications/VMware Fusion.app/Contents/Library/vmnet-cli","--stop"])
+                    call(["sudo","/Applications/VMware Fusion.app/Contents/Library/vmnet-cli","--configure"])
+                    call(["sudo","/Applications/VMware Fusion.app/Contents/Library/vmnet-cli","--start"])
+                except:
+                    logger.debug("ERROR: Fusion Networking config failed.")
+                    print("ERROR: Fusion Networking config failed.")
             elif get_macos_version() > 10.99:
-                logger.info("Going to get network loader script. %s" % (fusion_url))
-                save(fusion_url, getuser() + os.sep + fusion_loader)
-                print("{:-^30s}".format("Automatically Configuring Network."))
-                print("{:-^30s}".format("Please enter SSO password."))
-                call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
+                try:
+                    logger.info("Detected Big Sur, attempting anyways.")
+                    backupcurrentconfig(fusioncfgfile)
+                    vmnetconfig(vmnetfile)
+                    call(["sudo","/Applications/VMware Fusion.app/Contents/Library/vmnet-cli","--stop"])
+                    call(["sudo","/Applications/VMware Fusion.app/Contents/Library/vmnet-cli","--configure"])
+                    call(["sudo","/Applications/VMware Fusion.app/Contents/Library/vmnet-cli","--start"])
+                except:
+                    print("Error in network configuration. Process will continue.")
+                    logger.debug("Error in MacOS automatic Netwokring. Big Sur detected.")
         elif system() == "Windows":
             print("VMware Workstation import process is in the GUI.")
             print("This process should have already been completed.")
@@ -893,7 +898,7 @@ def syscheck(passkey,fwip):
         call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
         r = request.urlopen(call, context=cert_context).getcode()
         return r
-    except request.HTTPDefaultErrorHandler as e:
+    except:
         print("Attempted to access API. System not availableI.")
         print(start_message)
         
@@ -962,7 +967,7 @@ def main():
         vminfo = json.loads(request.urlopen(vminfo_url).read())
         network_loader()
         for each in vminfo:
-            if findova(vminfo.get(each).get('ova')):
+            if findgdrive(vminfo.get(each).get('ova')):
                 print("\n")
                 print("{:-^30s}".format("Searching"))
                 logger.debug("File located: %s" % (vminfo.get(each).get('ova')))
@@ -970,7 +975,7 @@ def main():
                 print("{:-^30s}".format("Searching"))
                 print("\n")
                 print("{:-^30s}".format("Performing SHA1 Check"))
-                local_sha = sha1sum(findova(vminfo.get(each).get('ova')))
+                local_sha = sha1sum(findgdrive(vminfo.get(each).get('ova')))
                 print("Local SHA1 Summary: %s" % (local_sha))
                 print("{:-^30s}".format("Comparing HASH"))
                 if check_sha1sum(vminfo.get(each).get('sha1sum'), local_sha) == True:
@@ -999,7 +1004,7 @@ def main():
                     if oscheck == "Darwin":
                         if dir_check(getuser() + os.sep + vmware_dir_macos):
                             if vminfo.get(each).get('status') == True:
-                                unpackova(findova(vminfo.get(each).get('ova')),
+                                unpackova(findgdrive(vminfo.get(each).get('ova')),
                                         getuser() + os.sep + vmware_dir_macos)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
@@ -1023,7 +1028,7 @@ def main():
                         else:
                             dir_build()
                             if vminfo.get(each).get('status') == True:
-                                unpackova(findova(vminfo.get(each).get('ova')),
+                                unpackova(findgdrive(vminfo.get(each).get('ova')),
                                         getuser() + os.sep + vmware_dir_macos)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
@@ -1057,7 +1062,7 @@ def main():
                     elif oscheck == "Windows":
                         if dir_check(getuser() + os.sep + vmware_dir_windows):
                             if vminfo.get(each).get('status') == True:
-                                unpackova(findova(vminfo.get(each).get('ova')),
+                                unpackova(findgdrive(vminfo.get(each).get('ova')),
                                         getuser() + os.sep + vmware_dir_windows)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
@@ -1090,7 +1095,7 @@ def main():
                         else:
                             dir_build()
                             if vminfo.get(each).get('status') == True:
-                                unpackova(findova(vminfo.get(each).get('ova')),
+                                unpackova(findgdrive(vminfo.get(each).get('ova')),
                                         getuser() + os.sep + vmware_dir_windows)
                                 logger.info("Unpack completed at %s" % str(timestamp()))
                                 print("Unpack completed at %s" % str(timestamp()))
