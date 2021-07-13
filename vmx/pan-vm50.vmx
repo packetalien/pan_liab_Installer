@@ -1,6 +1,6 @@
 .encoding = "UTF-8"
 displayname = "pan-vm50"
-annotation = "Name: pan-vm50|0AStatus: Beta|0ALiaB Version: Pre-3.0|0A****** Details  Below******|0AIP: 192.168.55.10|0AAcct: admin|0APass: Paloalto1!|0A|0ANamed Snapshot ->l abinabox-baseline:|0AIP: 192.168.55.10|0Aethernet1/1, 192.168.55.20/24, zone: Untrust|0Aethernet1/2, 192.168.45.20/24, zone: Trust|0Aethernet1/3, 192.168.35.20/24, zone: Servers|0A|0A|0ANamed Snapshot -> zero-trust-baselline:|0AIP: 192.168.55.15|0Aethernet1/1, 192.168.55.20/24, zone: Public|0Aethernet1/2, 192.168.45.20/24, zone: Users|0Aethernet1/3, 192.168.35.20/24, zone: Servers|0Aethernet1/4, 192.168.25.20/24, zone: Corporate|0Aethernet1/5, 192.168.15.20/24, zone: Developers|0Aethernet1/6, Tap, zone: Monitor|0A"
+annotation = "Name: pan-vm50 | Status: GA| LiaB Version: 3.0.63 IP: 192.168.55.10 Acct: admin Pass: Paloalto1!"
 guestos = "centos-64"
 virtualhw.version = "10"
 config.version = "8"
