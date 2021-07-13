@@ -910,29 +910,10 @@ def main():
                 print("SUCCESS: File %s Located." % (vminfo.get(each).get('ova')))
                 print("{:-^30s}".format("Searching"))
                 print("\n")
-                print("{:-^30s}".format("Performing SHA1 Check"))
-                local_sha = sha1sum(findova(vminfo.get(each).get('ova')))
-                print("Local SHA1 Summary: %s" % (local_sha))
-                print("{:-^30s}".format("Comparing HASH"))
-                if check_sha1sum(vminfo.get(each).get('sha1sum'), local_sha) == True:
-                    print("Integrity Check Successful.")
-                    print("{:-^30s}".format("SHA1 Check Complete"))
-                    print("\n")
-                    logger.info("Integrity Check Successful.")
-                else:
-                    print("SHA1 Check shows different HASH. OVA may not be current. Consider re-downloading.")
-                    if oscheck == "Darwin":
-                        webbrowser.get(chrome_path).open(vminfo.get(each).get('sourceurl'))
-                        logger.debug("Opened Browser to SourceURL for %s" % (vminfo.get(each).get('name')))
-                    elif oscheck == "Windows":
-                        webbrowser.get(chrome_path_win).open(vminfo.get(each).get('sourceurl'))
-                        logger.debug("Opened Browser to SourceURL for %s" % (vminfo.get(each).get('name')))
-                    else:
-                        logger.debug("Tried to open browser to SourceURL."
-                                     + " Unsupported OS detected")
-                    print("{:-^30s}".format("SHA1 Check Complete"))
-                    print("\n")
-                    logger.info("Integrity Check Fail. Re-download suggested.")
+                print("{:-^30s}".format("Skipping SHA1 Check"))
+                #local_sha = sha1sum(findova(vminfo.get(each).get('ova')))
+                #print("Local SHA1 Summary: %s" % (local_sha))
+                #print("{:-^30s}".format("Comparing HASH"))
                 print("{:-^30s}".format("Unpacking %s" % (vminfo.get(each).get('ova'))))
                 logger.debug("{:-^30s}".format("Unpacking %s" % (vminfo.get(each).get('ova'))))
                 print("This will take some time.")
