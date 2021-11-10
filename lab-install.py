@@ -42,13 +42,13 @@ import importlib
 import pip
 import requests
 try:
-    importlib.import_module(requests)
+    importlib.import_module('requests')
 except ImportError:
     print("The requests module is required. It was not detected.")
     print("\n The script will attempt to fix this. Just a moment...")
     try:
-        pip.main(['install', requests])
-        importlib.import_module(requests)
+        pip.main(['install', 'requests'])
+        importlib.import_module('requests')
     except ImportError:
         print("Requests failed to import.")
         print("\nFor support join #labinabox on Slack and post:")
