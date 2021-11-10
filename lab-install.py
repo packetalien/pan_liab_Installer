@@ -26,11 +26,11 @@ This software is provided without support, warranty, or guarantee.
 Use at your own risk.
 '''
 
-__author__ = "Richard Porter (@packetalien)"
-__copyright__ = "Copyright 2018, Palo Alto Networks"
-__version__ = "1.4"
+__author__ = "Richard Porter (rporter@paloaltonetworks.com)"
+__copyright__ = "Copyright 2021, Palo Alto Networks"
+__version__ = "1.5"
 __license__ = "MIT"
-__status__ = "Beta"
+__status__ = "Production"
 
 import os
 import sys
@@ -38,12 +38,23 @@ import time
 import getpass
 import hashlib
 import fnmatch
+import importlib
+import pip
+import requests
 try:
-    import requests
+    importlib.import_module(requests)
 except ImportError:
-    print("Trying to Install required module: requests\n")
-    print("If this fails try: python -m pip install requests.\n")
-    os.system('python -m pip install requests')
+    print("The requests module is required. It was not detected.")
+    print("\n The script will attempt to fix this. Just a moment...")
+    try:
+        pip.main(['install', requests])
+        importlib.import_module(requests)
+    except ImportError:
+        print("Requests failed to import.")
+        print("\nFor support join #labinabox on Slack and post:")
+        print("Automated requests install recovery error.")
+        print("Script exiting, it cannot continue without this package.")
+        exit()
 import logging
 import webbrowser
 import shutil
