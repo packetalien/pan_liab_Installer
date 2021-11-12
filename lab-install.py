@@ -40,7 +40,6 @@ import hashlib
 import fnmatch
 import importlib
 import pip
-import requests
 try:
     importlib.import_module('requests')
 except ImportError:
