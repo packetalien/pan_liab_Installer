@@ -26,9 +26,9 @@ This software is provided without support, warranty, or guarantee.
 Use at your own risk.
 '''
 
-__author__ = "Richard Porter (@packetalien)"
-__copyright__ = "Copyright 2018, Palo Alto Networks"
-__version__ = "1.4"
+__author__ = "Richard Porter rporter@paloaltonetworks.com"
+__copyright__ = "Copyright 2021, Palo Alto Networks"
+__version__ = "1.6"
 __license__ = "MIT"
 __status__ = "Beta"
 
