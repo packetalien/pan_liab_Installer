@@ -38,6 +38,22 @@ import time
 import getpass
 import hashlib
 import fnmatch
+import importlib
+import pip
+try:
+    importlib.import_module('requests')
+except ImportError:
+    print("The requests module is required. It was not detected.")
+    print("\n The script will attempt to fix this. Just a moment...")
+    try:
+        pip.main(['install', 'requests'])
+        importlib.import_module('requests')
+    except ImportError:
+        print("Requests failed to import.")
+        print("\nFor support join #labinabox on Slack and post:")
+        print("Automated requests install recovery error.")
+        print("Script exiting, it cannot continue without this package.")
+        exit()
 import platform
 import logging
 import webbrowser
