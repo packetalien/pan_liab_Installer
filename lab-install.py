@@ -54,6 +54,8 @@ except ImportError:
         print("Automated requests install recovery error.")
         print("Script exiting, it cannot continue without this package.")
         exit()
+finally:
+    globals()['requests'] = importlib.import_module('requests')
 import logging
 import webbrowser
 import shutil
