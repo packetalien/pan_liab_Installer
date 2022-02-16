@@ -106,11 +106,11 @@ logger.setLevel("DEBUG")
 # Firewall IP for Licensing
 fwip = "192.168.55.10"
 
-panos_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/pan-vm50.vmx"
-setools_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/linux-utility.vmx"
-msft_dc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/msft-dc.vmx"
-msft_rodc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/vmx/msft-rodc.vmx"
-vminfo_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/vminfo.json"
+panos_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/master/vmx/pan-vm50.vmx"
+setools_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/master/vmx/linux-utility.vmx"
+msft_dc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/master/vmx/msft-dc.vmx"
+msft_rodc_vmx = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/master/vmx/msft-rodc.vmx"
+vminfo_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/master/json/vminfo.json"
 fusion_url = "https://raw.githubusercontent.com/packetalien/fusion-network-config/master/vmnet-configure.py"
 win_install_url = "https://docs.google.com/document/d/1c1aGucFgBEEhtdHuiNxpUYyT9sMXEZ7FlnZ7KWSEB6U"
 win_network_url = "https://docs.google.com/document/d/1K9lvADAzlJa4R4S4G6aohYcT2t0BqYEK_183Oq7LRIs"
@@ -118,7 +118,7 @@ macos_install_url = "https://docs.google.com/document/d/1c1aGucFgBEEhtdHuiNxpUYy
 workstation_url = "https://github.com/packetalien/diabresources/blob/master/db/defaultse?raw=true"
 pan_license_url = "https://drive.google.com/open?id=1JcyZgitSsGY0JCTXoUJPAJRweZHyX2AQ"
 liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc2uqicV0ziW4"
-config_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/beta/json/config.json"
+config_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/master/json/config.json"
 vm50auth = "https://drive.google.com/file/d/1PWEnzE6S4AsRPt1xeDMjENCAZD-tKpoS/view?usp=sharing"
 
 # TODO: Move all of this to a CONF file.
