@@ -50,7 +50,7 @@
     "sha1sum": "00fed6c845af14cf00721f3135142e588a677a37",
     "vmx": "msft-dc.vmx",
     "macos": "/msft-dc.vmwarevm/",
-    "windows": "/msft-dc.vmwarevm/",
+    "windows": "msft-dc/",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "64",
     "fileSize": "7GB"
