@@ -14,7 +14,7 @@
     "macos": "/pan-vm50.vmwarevm/",
     "windows": "pan-vm50/",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
-    "version": "63",
+    "version": "64",
     "fileSize": "4GB"
   },
   "panpanorama": {
@@ -52,7 +52,7 @@
     "macos": "/msft-dc.vmwarevm/",
     "windows": "/msft-dc.vmwarevm/",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
-    "version": "63",
+    "version": "64",
     "fileSize": "7GB"
   },
   "linuxutility": {
@@ -70,7 +70,7 @@
     "macos": "/linux-utility.vmwarevm/",
     "windows": "/linux-utility/",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
-    "version": "63",
+    "version": "64",
     "fileSize": "9GB"
   },
   "pansoc": {
@@ -90,7 +90,7 @@
     "macos": "/pan-soc.vmwarevm/",
     "windows": "pan-soc/",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
-    "version": "63",
+    "version": "64",
     "fileSize": "11GB"
   },
   "msftrodc": {
@@ -108,7 +108,7 @@
     "macos": "/msft-rodc.vmwarevm/",
     "windows": "msft-rodc/",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
-    "version": "63",
+    "version": "64",
     "fileSize": "5GB"
   },
   "msftw10": {
@@ -126,7 +126,7 @@
     "macos": "/msft-w10.vmwarevm/",
     "windows": "msft-w10/",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
-    "version": "63",
+    "version": "64",
     "fileSize": "8GB"
   },
   "panexpedition": {
