@@ -12,7 +12,7 @@
     "sha1sum": "fa12146a35f7afcce06eb4aa265a6b8a11af1e6b",
     "vmx": "pan-vm50.vmx",
     "macos": "/pan-vm50.vmwarevm/",
-    "windows": "pan-vm50/",
+    "windows": "pan-vm50",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "64",
     "fileSize": "4GB"
@@ -32,7 +32,7 @@
     "sha1sum": "64ddcdb6558db618193f78403dbbf7efe3d08336",
     "vmx": "pan-panorama.vmx",
     "macos": "/pan-panorama.vmwarevm/",
-    "windows": "pan-panorama/",
+    "windows": "pan-panorama",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "63",
     "fileSize": "3GB"
@@ -50,7 +50,7 @@
     "sha1sum": "00fed6c845af14cf00721f3135142e588a677a37",
     "vmx": "msft-dc.vmx",
     "macos": "/msft-dc.vmwarevm/",
-    "windows": "msft-dc/",
+    "windows": "msft-dc",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "64",
     "fileSize": "7GB"
@@ -68,7 +68,7 @@
     "sha1sum": "bd2d0846d0cf26ce5542159aab7b0c76138e72c7",
     "vmx": "linux-utility.vmx",
     "macos": "/linux-utility.vmwarevm/",
-    "windows": "linux-utility/",
+    "windows": "linux-utility",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "64",
     "fileSize": "9GB"
@@ -106,7 +106,7 @@
     "sha1sum": "a510dfd03690a924ee1242b2828101c2a9a60286",
     "vmx": "msft-rodc.vmx",
     "macos": "/msft-rodc.vmwarevm/",
-    "windows": "msft-rodc/",
+    "windows": "msft-rodc",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "64",
     "fileSize": "5GB"
@@ -124,7 +124,7 @@
     "sha1sum": "26617710f3f65301969ebe2a5a7e1fd9375ab83c",
     "vmx": "msft-w10.vmx",
     "macos": "/msft-w10.vmwarevm/",
-    "windows": "msft-w10/",
+    "windows": "msft-w10",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "64",
     "fileSize": "8GB"
@@ -142,7 +142,7 @@
     "sha1sum": "7ecb7ff7b87ad65d7c6e3686837e54a11c3ad1db",
     "vmx": "pan-expedition.vmx",
     "macos": "/pan-expedition.vmwarevm/",
-    "windows": "pan-expedition/",
+    "windows": "pan-expedition",
     "vmprofile": "https://docs.google.com/document/d/1WJDs2EMNq2A99qYUde8QGvzqssIDMO_njTS95bHyPaI",
     "version": "63",
     "fileSize": "4GB"
