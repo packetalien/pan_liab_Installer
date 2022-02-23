@@ -698,7 +698,7 @@ def verify_delete():
              sleep(5)
              print(no_banner)
              sleep(5)
-             #exit() 
+             exit() 
         else: 
         	print("Please enter yes or no.")
 
