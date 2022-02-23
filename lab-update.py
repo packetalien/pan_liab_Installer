@@ -170,8 +170,8 @@ and will DELETE Virtual Machines
 
 ARE YOU SURE YOU WISH TO PROCEED? 
 
-Enter YES exactly to proceed!
-Enter NO to exit!
+Enter yes exactly to proceed!
+Enter no to exit!
 '''
 
 delete_banner = r'''
@@ -369,7 +369,7 @@ def dir_build():
 
 # NOT PEP8 cause PEP8 kept breaking my code
 # Or I'm a part time idiot.
-def get_vmx(url, filename, each, vminfo,tmp):
+def get_vmx(url, filename, each, vminfo, tmp):
     '''
     This function retrieves vmx from resource github.
     Calls the move_vmx() function to replace vmx file.
@@ -377,6 +377,7 @@ def get_vmx(url, filename, each, vminfo,tmp):
     TODO: Unit Testing and Valdiation
     '''
     os.chdir(tmp)
+    home = getuser()
     try:
         if system() == "Darwin":
             print("{:-^30s}".format("Automatically Configurating %s Network Settings." % (vminfo.get(each))))
@@ -384,36 +385,36 @@ def get_vmx(url, filename, each, vminfo,tmp):
             print("Getting preconfigured %s Settings File." % (vminfo.get(each)))
             logger.debug(url)
             logger.debug(filename)
-            save(url, os.getcwd() + os.sep + filename)
+            save(url, tmp + os.sep + filename)
             logger.info("Success: got the file from URL: %s" % (url))
             print("Success: got the file from URL: %s" % (url))
-            copy(findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak")
-            logger.info("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak"))
-            print("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak"))
-            copy(os.getcwd() + os.sep + filename, getuser() + os.sep + vmware_dir_macos + vminfo.get(each).get('macos'))
-            logger.info("Copied %s to %s" % (os.getcwd() + os.sep + filename, getuser() + os.sep + vmware_dir_macos + vminfo.get(each).get('macos')))
-            print("Copied %s to %s" % (os.getcwd() + os.sep + filename, getuser() + os.sep + vmware_dir_macos + vminfo.get(each).get('macos')))
+            copy(findfile(filename, home + os.sep + vmware_dir_macos), findfile(filename, home + os.sep + vmware_dir_macos) + ".bak")
+            logger.info("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_macos), findfile(filename, home + os.sep + vmware_dir_macos) + ".bak"))
+            print("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_macos), findfile(filename, home + os.sep + vmware_dir_macos) + ".bak"))
+            copy(tmp + os.sep + filename, home + os.sep + vmware_dir_macos + vminfo.get(each).get('macos'))
+            logger.info("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_macos + vminfo.get(each).get('macos')))
+            print("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_macos + vminfo.get(each).get('macos')))
             logger.debug("Success, replaced local vmx with master vmx.")
             logger.info("Cleaning up. Deleting %s" % (os.getcwd + os.sep + filename))
-            os.remove(os.getcwd() + os.sep + filename)
+            os.remove(tmp + os.sep + filename)
         elif system() == "Windows":
             print("{:-^30s}".format("Automatically Configurating %s Network Settings." % (vminfo.get(each))))
             print("\n")
             print("Getting preconfigured %s Settings File." % (vminfo.get(each)))
             logger.debug(url)
             logger.debug(filename)
-            save(url, os.getcwd() + os.sep + filename)
+            save(url, tmp + os.sep + filename)
             logger.info("Success: got the file from URL: %s" % (url))
             print("Success: got the file from URL: %s" % (url))
-            copy(findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak")
-            logger.info("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak"))
-            print("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak"))
-            copy(os.getcwd() + os.sep + filename, getuser() + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows'))
-            logger.info("Copied %s to %s" % (os.getcwd() + os.sep + filename, getuser() + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows')))
-            print("Copied %s to %s" % (os.getcwd() + os.sep + filename, getuser() + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows')))
+            copy(findfile(filename, home + os.sep + vmware_dir_windows), findfile(filename, home + os.sep + vmware_dir_windows) + ".bak")
+            logger.info("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_windows), findfile(filename, home + os.sep + vmware_dir_windows) + ".bak"))
+            print("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_windows), findfile(filename, home + os.sep + vmware_dir_windows) + ".bak"))
+            copy(tmp + os.sep + filename, home + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows'))
+            logger.info("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows')))
+            print("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows')))
             logger.debug("Success, replaced local vmx with master vmx.")
-            logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
-            os.remove(os.getcwd() + os.sep + filename)
+            logger.info("Cleaning up. Deleting %s" % (home + os.sep + filename))
+            os.remove(tmp + os.sep + filename)
         else:
             logger.info("Operating System not recognized.")
     except:
@@ -904,13 +905,14 @@ def main():
             print(err)
             print("Directory '%s' can not be removed" % (getuser() + os.sep + "tmp"))
     
-    except:
+    except OSError as err:
         print ("\n")
         print("{:-^30s}".format("ERROR"))
         print(
             "A major error has occured and the install process has halted."
             )
-        logger.debug("Error, install halted.")
+        print(err)
+        logger.debug(err)
         print("For support contact #labinabox on Slack.")
         print("{:-^30s}".format("ERROR"))
         print ("\n")
