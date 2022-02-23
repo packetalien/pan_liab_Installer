@@ -897,13 +897,6 @@ def main():
                 print(missing_banner)
                 print("\n\n Script will continue without: %s" % (vminfo.get(each).get('ova')))
                 pass
-        try:
-            os.chdir(getuser())
-            shutil.rmtree(getuser() + os.sep + "tmp")
-            print("Directory '%s' has been removed successfully" % (getuser() + os.sep + "tmp"))
-        except OSError as err:
-            print(err)
-            print("Directory '%s' can not be removed" % (getuser() + os.sep + "tmp"))
     
     except OSError as err:
         print ("\n")
