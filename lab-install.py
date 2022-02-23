@@ -28,7 +28,7 @@ Use at your own risk.
 
 __author__ = "Richard Porter (rporter@paloaltonetworks.com)"
 __copyright__ = "Copyright 2021, Palo Alto Networks"
-__version__ = "1.5"
+__version__ = "1.6"
 __license__ = "MIT"
 __status__ = "Production"
 
@@ -38,30 +38,18 @@ import time
 import getpass
 import hashlib
 import fnmatch
-import importlib
-import pip
-try:
-    importlib.import_module('requests')
-except ImportError:
-    print("The requests module is required. It was not detected.")
-    print("\n The script will attempt to fix this. Just a moment...")
-    try:
-        pip.main(['install', 'requests'])
-        importlib.import_module('requests')
-    except ImportError:
-        print("Requests failed to import.")
-        print("\nFor support join #labinabox on Slack and post:")
-        print("Automated requests install recovery error.")
-        print("Script exiting, it cannot continue without this package.")
-        exit()
-finally:
-    globals()['requests'] = importlib.import_module('requests')
+import json
 import logging
 import webbrowser
 import shutil
 import json
 import glob
+import logging
+from distutils import errors
+from shutil import rmtree
+from urllib import request
 from time import strftime
+from time import sleep
 from platform import system
 from subprocess import call
 from subprocess import Popen
@@ -69,12 +57,10 @@ from logging.handlers import RotatingFileHandler
 from os.path import expanduser
 from os import path
 from shutil import copy
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
+from urllib.error import HTTPError
 
 '''
-Setting up a simple logger. Check 'controller.log' for
+Setting up a simple logger. Check 'installer.log' for
 logger details.
 '''
 
@@ -121,6 +107,11 @@ liab_gdrive = "https://drive.google.com/drive/u/0/folders/1Yh6Ca4wThWRmwEWtVuShc
 config_url = "https://raw.githubusercontent.com/packetalien/pan_liab_Installer/master/json/config.json"
 vm50auth = "https://drive.google.com/file/d/1PWEnzE6S4AsRPt1xeDMjENCAZD-tKpoS/view?usp=sharing"
 
+# MacOS Network Configurator Variables
+netCFG = "https://raw.githubusercontent.com/packetalien/fusion-network-config/master/netcfg.json"
+netfile = "/Library/Preferences/VMware Fusion/networking"
+netfileheader = "VERSION=1,0"
+
 # TODO: Move all of this to a CONF file.
 # Default Directories
 vmware_dir_windows = "Documents\Virtual Machines"
@@ -159,61 +150,27 @@ msft_dc_hash = "da81e84a956fbee76132640fdd8b9d58a9be0cca"
 msft_rodc_hash = "4f8a858be733b90751a5e155ed34591ad121371e"
 pan_license_hash = "752bad5ff36e7a4c41a49fa7f3feb41f0f26aa21"
 
-# API Keys for VM-Series
-passkey8 = "LUFRPT10VGJKTEV6a0R4L1JXd0ZmbmNvdUEwa25wMlU9d0N5d292d2FXNXBBeEFBUW5pV2xoZz09"
-passkey9 = "LUFRPT1tZVhOVFFMUERLZk5qd09Kd3FLT3FMcXRwOTg9Y2NOdGxCM01PZEhRcFhZem94MXhzeUp1eW54RWxZbTZvSCtsUFJvMTlTQU1qbUVGWGNtdjZ0aWFGZENGQUhVdA=="
+continue_banner = r'''
+.=====================================================.
+||                                                   ||
+||   _       _--""--_                                ||
+||     " --""   |    |   .--.           |    ||      ||
+||   " . _|     |    |  |    |          |    ||      ||
+||   _    |  _--""--_|  |----| |.-  .-i |.-. ||      ||
+||     " --""   |    |  |    | |   |  | |  |         ||
+||   " . _|     |    |  |    | |    `-( |  | ()      ||
+||   _    |  _--""--_|             |  |              ||
+||     " --""                      `--'              ||
+||                                                   ||
+`=====================================================
+A MAJOR Error occured.
 
-# Start Up VM Variable
-start_message = '''
-___________((_____))
-____________))___((
-___________((_____))
-____________))___((
-___________((_____))____________$$$$$$
-____________))___((____________$$____$$
-_$$$$$$$$$$$$$$$$$$$$$$$$$$$$$______$$
-__$$$$$$$$Start$$$$$$$$$$$$$$_______$$
-___$$$$$$$$$$the$$$$$$$$$$$________$$
-____$$$$$$VM-50$$$$$$$$$$$________$$
-____$$$$$$$$NOW$$$$$$$$$$$______$$
-_____$$$$$$$$$$$$$$$$$$$$_____$$
-_____$$$$$$$$$$$$$$$$$$$$$$$$$
-______$$$$$$$$$$$$$$$$$$
-_______$$$$$$$$$$$$$$$$
-_________$$$$$$$$$$$$
-___________$$$$$$$$
-_$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-___$$$$$$$$$$$$$$$$$$$$$$$$
-_____$$$$$$$$$$$$$$$$$$$$__
-We do not auto-start the VM-Series.
-In order for licensing to work you
-need to start the VM50. Do so NOW
-as it takes 5-10 min to boot.
-'''
-start_message_again = '''
-___________((_____))
-____________))___((
-___________((_____))
-____________))___((
-___________((_____))____________$$$$$$
-____________))___((____________$$____$$
-_$$$$$$$$$$$$$$$$$$$$$$$$$$$$$______$$
-__$$$$$$$$Start$$$$$$$$$$$$$$_______$$
-___$$$$$$$$$$the$$$$$$$$$$$________$$
-____$$$$$$VM-50$$$$$$$$$$$________$$
-____$$$$$$$$NOW$$$$$$$$$$$______$$
-_____$$$$$$$$$$$$$$$$$$$$_____$$
-_____$$$$$$$$$$$$$$$$$$$$$$$$$
-______$$$$$$$$$$$$$$$$$$
-_______$$$$$$$$$$$$$$$$
-_________$$$$$$$$$$$$
-___________$$$$$$$$
-_$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-___$$$$$$$$$$$$$$$$$$$$$$$$
-_____$$$$$$$$$$$$$$$$$$$$__
-What the first message was not clear?
-START THE VM-Series, that is why the API
-is not accessible!
+The script can attempt to continue.
+
+ARE YOU SURE YOU WISH TO PROCEED? 
+
+Enter YES exactly to proceed!
+Enter NO to exit!
 '''
 
 network_configure = r'''
@@ -270,17 +227,82 @@ print_authcode_message = r'''
                        \%%%%           /
                           \%%         |
                            |%%        |
-    No Auth Code Found
-    Not even a Sound
-    No Auth Code Today
-    It is Far Away
-    Not in a Hat
-    Not in the Code
-    Not in the Commode
-    Can you find the Link?
-    It surely does not stink!
+    When SOCs Fight these Battles
+    With a Keyboard and A Hammer
+    On a Zoom in the Room
+    They call this a
+    Muddled, Huddle, Zweedle, Fuddle
+    Keyboard, Puddle, Coffee, Paddle, Battle
+'''
 
-if you are seeing this message please enter an AuthCode:
+flex_banner = r'''
+                       ---                                     
+                    -        --                             
+                --( /     \ )XXXXXXXXXXXXX                   
+            --XXX(   O   O  )XXXXXXXXXXXXXXX-              
+           /XXX(       U     )        XXXXXXX\               
+         /XXXXX(              )--   XXXXXXXXXXX\             
+        /XXXXX/ (      O     )   XXXXXX   \XXXXX\
+        XXXXX/   /            XXXXXX   \   \XXXXX----        
+        XXXXXX  /          XXXXXX         \  ----  -         
+---     XXX  /          XXXXXX      \           ---        
+  --  --  /      /\  XXXXXX            /     ---=         
+    -        /    XXXXXX              '--- XXXXXX         
+      --\/XXX\ XXXXXX                      /XXXXX         
+        \XXXXXXXXX                        /XXXXX/
+         \XXXXXX                         /XXXXX/         
+           \XXXXX--  /                -- XXXX/       
+            --XXXXXXX---------------  XXXXX--         
+               \XXXXXXXXXXXXXXXXXXXXXXXX-            
+                 --XXXXXXXXXXXXXXXXXX-
+
+Who you gonna call?
+FlexCredits!
+https://docs.google.com/document/d/1x40oGCSPsS0efBxPyoeFyQf6eJIhwiMPGlbZyw-Zyrc/edit
+'''
+
+missing_banner = r'''
+                       ---                                     
+                    -        --                             
+                --( /     \ )XXXXXXXXXXXXX                   
+            --XXX(   O   O  )XXXXXXXXXXXXXXX-              
+           /XXX(       U     )        XXXXXXX\               
+         /XXXXX(              )--   XXXXXXXXXXX\             
+        /XXXXX/ (      O     )   XXXXXX   \XXXXX\
+        XXXXX/   /            XXXXXX   \   \XXXXX----        
+        XXXXXX  /          XXXXXX         \  ----  -         
+---     XXX  /          XXXXXX      \           ---        
+  --  --  /      /\  XXXXXX            /     ---=         
+    -        /    XXXXXX              '--- XXXXXX         
+      --\/XXX\ XXXXXX                      /XXXXX         
+        \XXXXXXXXX                        /XXXXX/
+         \XXXXXX                         /XXXXX/         
+           \XXXXX--  /                -- XXXX/       
+            --XXXXXXX---------------  XXXXX--         
+               \XXXXXXXXXXXXXXXXXXXXXXXX-            
+                 --XXXXXXXXXXXXXXXXXX-
+
+Something was missing???????
+
+
+'''
+
+major_error = r'''
+Art by Shanaka Dias
+            __:.__
+           (_:..'"=
+            ::/ o o\         AHAH!
+           ;'-'   (_)     Spaceman Spiff      .
+           '-._  ;-'        wins again !  _'._|\/:
+           .:;  ;   .            .         '- '   /_
+          :.. ; ;,   \            \       _/,    "_<
+         :.|..| ;:    \            \__   '._____  _)
+         :.|.'| ||   And I wanted             _/ /
+         :.|..| :'     to install things!    `;--:
+         '.|..|:':       _               _ _ :|_\:
+      .. _:|__| '.\.''..' ) ___________ ( )_):|_|:
+:....::''::/  | : :|''| "/ /_=_=_=_=_=/ :_[__'_\3_)
+ ''      '-''-'-'.__)-'
 '''
 
 # Functions
@@ -292,29 +314,59 @@ def timestamp():
     stamp = strftime("%Y%m%d-%H%M%S")
     return stamp
 
+def searchdir():
+    try:
+        if system() == "Darwin":
+            searchdir = getuser() + os.sep + vmware_dir_macos
+            logger.info("Built Search Directory: %s" % (getuser() + os.sep + vmware_dir_macos))
+            return searchdir
+        elif system() == "Windows":
+            searchdir = getuser() + os.sep + vmware_dir_windows
+            logger.info("Built Search Directory: %s" % (getuser() + os.sep + vmware_dir_windows))
+            return searchdir
+    except IOError as e:
+        logger.debug("An IOError has occured as %s" % e)
+
 def save(url, filename):
     '''
     Simple download function based on requests. Takes in
     a url and a filename. Saves to directory filemane indicates.
     '''
-    with open(filename, "wb") as f:
-        print("Downloading %s" % filename)
-        logger.debug("Downloading %s" % filename) 
-        response = requests.get(url, stream=True, verify=False)
-        total_length = response.headers.get('content-length')
-        if total_length is None: # no content length header
-            f.write(response.content)
-        else:
-            dl = 0
-            total_length = int(total_length)
-            for data in response.iter_content(chunk_size=4096):
-                dl += len(data)
-                f.write(data)
-                done = int(50 * dl / total_length)
-                sys.stdout.write("\r[%s%s]" %
-                                 ('*' * done, ' ' * (50-done)) )    
-                sys.stdout.flush()
-    print("\n")
+    try:
+        print("Getting File.... %s" % (filename))
+        sleep(2)
+        request.urlretrieve(url,filename)
+    except:
+        print("Soemthing went wrong in save() and the program cannot continue safely.")
+        print("\n\nExiting...")
+        exit()
+
+def getnet(netCFG):
+    try:
+        webURL = request.urlopen(netCFG)
+        netdata = webURL.read()
+        encoding = webURL.info().get_content_charset('utf-8')
+        netjson = json.loads(netdata.decode(encoding))
+        logger.info(netjson)
+        return netjson
+    except HTTPError as err:
+        logger.debug(err)
+        print(err)
+
+def getvminfo(vminfo_url):
+    '''
+    Retrieves vminfo.json from a url and hash checks with master.
+    '''
+    try:
+        webURL = request.urlopen(vminfo_url)
+        netdata = webURL.read()
+        encoding = webURL.info().get_content_charset('utf-8')
+        vminfo = json.loads(netdata.decode(encoding))
+        logger.debug(vminfo)
+        return vminfo
+    except HTTPError as err:
+        logger.debug(err)
+        print(err)
 
 def sha1sum(filename):
     '''
@@ -413,81 +465,56 @@ def start_workstation():
 # Should be okay for now.
 # TODO: Format me please!
 
-def get_vmx(url, filename):
+def get_vmx(url, filename, each, vminfo, tmp):
     '''
     This function retrieves vmx from resource github.
     Calls the move_vmx() function to replace vmx file.
     TODO: Format PEP8
     TODO: Unit Testing and Valdiation
     '''
+    os.chdir(tmp)
+    home = getuser()
     try:
         if system() == "Darwin":
-            print("{:-^30s}".format("Automatically Configurating vmnets."))
+            print("{:-^30s}".format("Automatically Configurating %s Network Settings." % (vminfo.get(each))))
             print("\n")
-            print("Getting preconfigured vmx file.")
+            print("Getting preconfigured %s Settings File." % (vminfo.get(each)))
             logger.debug(url)
             logger.debug(filename)
-            save(url, getuser() + os.sep + filename)
+            save(url, tmp + os.sep + filename)
             logger.info("Success: got the file from URL: %s" % (url))
             print("Success: got the file from URL: %s" % (url))
-            copy(findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak")
-            logger.info("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak"))
-            print("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_macos), findfile(filename, getuser() + os.sep + vmware_dir_macos) + ".bak"))
-            copy(getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos))
-            logger.info("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos)))
-            print("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_macos)))
+            copy(findfile(filename, home + os.sep + vmware_dir_macos), findfile(filename, home + os.sep + vmware_dir_macos) + ".bak")
+            logger.info("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_macos), findfile(filename, home + os.sep + vmware_dir_macos) + ".bak"))
+            print("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_macos), findfile(filename, home + os.sep + vmware_dir_macos) + ".bak"))
+            copy(tmp + os.sep + filename, home + os.sep + vmware_dir_macos + vminfo.get(each).get('macos'))
+            logger.info("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_macos + vminfo.get(each).get('macos')))
+            print("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_macos + vminfo.get(each).get('macos')))
             logger.debug("Success, replaced local vmx with master vmx.")
-            logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
-            os.remove(getuser() + os.sep + filename)
+            logger.info("Cleaning up. Deleting %s" % (os.getcwd + os.sep + filename))
+            os.remove(tmp + os.sep + filename)
         elif system() == "Windows":
-            print("{:-^30s}".format("Automatically Configurating vmnets."))
+            print("{:-^30s}".format("Automatically Configurating %s Network Settings." % (vminfo.get(each))))
             print("\n")
-            print("Getting preconfigured vmx file.")
+            print("Getting preconfigured %s Settings File." % (vminfo.get(each)))
             logger.debug(url)
             logger.debug(filename)
-            save(url, getuser() + os.sep + filename)
+            save(url, tmp + os.sep + filename)
             logger.info("Success: got the file from URL: %s" % (url))
             print("Success: got the file from URL: %s" % (url))
-            copy(findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak")
-            logger.info("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak"))
-            print("Copied %s to %s" % (findfile(filename, getuser() + os.sep + vmware_dir_windows), findfile(filename, getuser() + os.sep + vmware_dir_windows) + ".bak"))
-            copy(getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows))
-            logger.info("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows)))
-            print("Copied %s to %s" % (getuser() + os.sep + filename, findfile(filename, getuser() + os.sep + vmware_dir_windows)))
+            copy(findfile(filename, home + os.sep + vmware_dir_windows), findfile(filename, home + os.sep + vmware_dir_windows) + ".bak")
+            logger.info("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_windows), findfile(filename, home + os.sep + vmware_dir_windows) + ".bak"))
+            print("Copied %s to %s" % (findfile(filename, home + os.sep + vmware_dir_windows), findfile(filename, home + os.sep + vmware_dir_windows) + ".bak"))
+            copy(tmp + os.sep + filename, home + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows'))
+            logger.info("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows')))
+            print("Copied %s to %s" % (tmp + os.sep + filename, home + os.sep + vmware_dir_windows + os.sep + vminfo.get(each).get('windows')))
             logger.debug("Success, replaced local vmx with master vmx.")
-            logger.info("Cleaning up. Deleting %s" % (getuser() + os.sep + filename))
-            os.remove(getuser() + os.sep + filename)
+            logger.info("Cleaning up. Deleting %s" % (home + os.sep + filename))
+            os.remove(tmp + os.sep + filename)
         else:
             logger.info("Operating System not recognized.")
     except:
         logger.debug("An exception occured in get_vmx()")
-
-def getvminfo(url, filename):
-    '''
-    Retrieves vminfo.json from a url and hash checks with master.
-    '''
-    try:
-        if os.path.exists(filename):
-            if check_sha1sum(vminfo_sha,sha1sum(filename)) == False:
-                logger.info("Virtual Machine data out of date, getting new file now.")
-                save(url, filename)
-                logger.debug("Saved %s as %s" % (url, filename))
-                vminfo = json.loads(open(findfile(filename, os.getcwd())).read())
-                logger.debug("Loaded new file as %s \n" % (vminfo))
-                return vminfo
-            else:
-                logger.debug("Found local file, hash matched remote.")
-                vminfo = json.loads(open(findfile(filename, os.getcwd())).read())
-                logger.debug("Loaded local file as %s \n" % (vminfo))
-                return vminfo
-        else:
-            logger.debug("File not found, going to get it.")
-            save(url, filename)
-            logger.debug("Saved %s as %s" % (url, filename))
-            vminfo = json.loads(open(filename).read())
-            return vminfo
-    except:
-        logger.debug("Exception occured in getvminfo().")
 
 def getuser():
     '''
@@ -509,22 +536,6 @@ def findfile(filename, searchdir):
         if filename in files:
             return os.path.join(base, filename)
 
-def find_license_file(filename, searchdir):
-    '''
-    Function searches user directory for
-    pan-license-vmseries.py.
-    It compares to the file HASH.
-    
-    It returns location/file. 
-    
-    Uses os.walk for compatibility.
-    '''
-    for base, dirs, files, in os.walk(searchdir):
-        if filename in files:
-            return os.path.join(base, filename)
-        
-# TODO: Update with pathlib.Path.rglob after moving to 3.X        
-
 def findova(filename):
     '''
     Function searches user directory for file.
@@ -534,11 +545,20 @@ def findova(filename):
     '''
     try:
         if system() == "Darwin":
-            home = os.sep + r"Volumes" + os.sep + r"GoogleDrive"
-            for base, dirs, files, in os.walk(home):
-                if filename in files:
-                    logger.debug("Found %s" % (os.path.join(base, filename)))
-                    return os.path.join(base, filename)
+            if os.path.exists(os.sep + r"Volumes" + os.sep + r"GoogleDrive"):
+                logger.info("Found Google Drive")
+                home = os.sep + r"Volumes" + os.sep + r"GoogleDrive"
+                for base, dirs, files, in os.walk(home):
+                    if filename in files:
+                        logger.debug("Found %s" % (os.path.join(base, filename)))
+                        return os.path.join(base, filename)
+            else:
+                logger.info("Could not find Google Drive. Looking in ~/Downloads")
+                home = getuser() + os.sep + "Downloads" 
+                for base, dirs, files, in os.walk(home):
+                    if filename in files:
+                        logger.debug("Found %s" % (os.path.join(base, filename)))
+                        return os.path.join(base, filename)
         elif system() == "Windows":
             if os.path.exists(gstream):
                 logger.debug("Located Google Drive.")
@@ -548,44 +568,16 @@ def findova(filename):
                         return os.path.join(base, filename)
             else:
                 home = getuser()
+                logger.info("Could not find Google Drive. Looking in $env:USERPROFILE Downloads")
                 for base, dirs, files, in os.walk(home):
                     if filename in files:
                         logger.debug("Found %s" % (os.path.join(base, filename)))
                         return os.path.join(base, filename)            
-    except:
+    except OSError as err:
+        print(err)
+        logger.debug(err)
         print("Catastrophic Failure in findova()")
         logger.info("Catastrophic Error in findova() function.")
-
-def findlic(filename):
-    '''
-    Function searches user directory for file.
-    It returns location/file. 
-
-    Uses os.walk for compatibility.
-    '''
-    try:
-        if system() == "Darwin":
-            home = getuser()
-            for base, dirs, files, in os.walk(home):
-                if filename in files:
-                    logger.debug("Found %s" % (os.path.join(base, filename)))
-                    return os.path.join(base, filename)
-        elif system() == "Windows":
-            if os.path.exists(gstream):
-                logger.debug("Located Google Drive.")
-                for base, dirs, files, in os.walk(os.path.normpath(gstream)):
-                    if filename in files:
-                        logger.debug("Found %s" % (os.path.join(base, filename)))
-                        return os.path.join(base, filename)
-            else:
-                home = getuser()
-                for base, dirs, files, in os.walk(home):
-                    if filename in files:
-                        logger.debug("Found %s" % (os.path.join(base, filename)))
-                        return os.path.join(base, filename)            
-    except:
-        print("Catastrophic Failure in findlic()")
-        logger.info("Catastrophic Error in findlic() function.")
 
 def dir_check(directory):
     '''
@@ -764,159 +756,218 @@ def stopvm(vmx):
         logger.debug("Succesfully deleted %s" % (vmx))
     except IOError as e:
         logger.debug("IOError as %s" % (e))
+def netmove(netfile):
+    try:
+        print("{:-^40s}".format("Backing up Config"))
+        netfilebak = netfile + filetimestamp()
+        logger.info("Moving %s" % (netfilebak))
+        call(
+            ["sudo", "mv" ,"-f" , netfile,
+            netfilebak]
+            )
+        print("Moved %s to %s" % (netfile, netfilebak))
+        logger.info("Moved %s to %s" % (netfile, netfilebak))
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
+def netcreate(newfile, netfile):
+    # Function Variables
+    try:
+        if os.path.exists(getuser() + os.sep + "networking"):
+            print("{:-^40s}".format("Moving new Config"))
+            call(
+                ["sudo", "mv" ,"-f" , newfile, netfile]
+                )
+            print("Moved %s to %s" % (newfile, netfile))
+            logger.info("Moved %s to %s" % (newfile, netfile))
+        else:
+            print("{:-^40s}".format("ERROR"))
+            print("Could Not Find File")
+            print("Script will Exit. It cannot continue")
+            print("{:-^40s}".format("ERROR"))
+            exit()
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
+def netcheck(home):
+    # Check for old network files
+    try:
+        if os.path.exists(getuser() + os.sep + "networking"):
+            print("{:-^40s}".format("WARNING"))
+            print("Found a networking file in %s" % (getuser()))
+            print("Removing for a clean build")
+            logger.info("{:-^40s}".format("WARNING"))
+            logger.info("Found a networking file in %s" % (getuser()))
+            logger.info("Removing for a clean build")
+            os.remove(home + os.sep + "networking")
+            print("{:-^40s}".format("COMPLETE"))
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
+def enablep():
+    #Enables promiscuious mode in VMWare Fusion
+    try:
+        print("{:-^40s}".format("Enabling Promiscuious Mode"))
+        call(
+            ["sudo", "touch", "/Library/Preferences/VMware Fusion/promiscAuthorized"]
+            )
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
+def netbuilder(netinfo, netfileheader, home):
+    # network file found in:
+    # /Library/Preferences/VMWare\ Fusion/networking
+    #baseline answers for VMWare Fusion network file.
+    vnet_prefix = "VNET_"
+    dhcp_suffix = "_DHCP"
+    netmask_suffix = "_HOSTONLY_NETMASK"
+    subnet_suffix = "_HOSTONLY_SUBNET"
+    adapter_suffix = "_VIRTUAL_ADAPTER"
+    nat_suffix = "_NAT"
+    logger.debug("Ran netcheck()")
+    os.chdir(home)
+    try:
+        networking = open("networking", "a+")
+        print("{:-^40s}".format("Building Network from JSON config"))
+        logger.info("{:-^40s}".format("Building Network from JSON config"))
+        networking.write(netfileheader + "\n")
+        print(netfileheader)
+        try:
+            for each in netinfo:
+                networking.write("answer " + vnet_prefix + netinfo.get(each).get('VNET') + dhcp_suffix + " " + netinfo.get(each).get("DHCP") + "\n")
+                print("answer " + vnet_prefix + netinfo.get(each).get('VNET') + dhcp_suffix + " " + netinfo.get(each).get("DHCP"))
+                networking.write("answer " + vnet_prefix + netinfo.get(each).get('VNET') + netmask_suffix + " " + netinfo.get(each).get("NETMASK") + "\n")
+                print("answer " + vnet_prefix + netinfo.get(each).get('VNET') + netmask_suffix + " " + netinfo.get(each).get("NETMASK"))
+                networking.write("answer " + vnet_prefix + netinfo.get(each).get('VNET') + subnet_suffix + " " + netinfo.get(each).get("SUBNET") + "\n")
+                print("answer " + vnet_prefix + netinfo.get(each).get('VNET') + subnet_suffix + " " + netinfo.get(each).get("SUBNET"))
+                networking.write("answer " + vnet_prefix + netinfo.get(each).get('VNET') + adapter_suffix + " " + netinfo.get(each).get("VIRTUAL_ADAPTER") + "\n")
+                print("answer " + vnet_prefix + netinfo.get(each).get('VNET') + adapter_suffix + " " + netinfo.get(each).get("VIRTUAL_ADAPTER"))
+                if netinfo.get(each).get("NAT") == "yes":
+                    networking.write("answer " + vnet_prefix + netinfo.get(each).get('VNET') + nat_suffix + " " + netinfo.get(each).get("NAT") + "\n")
+                    print("answer " + vnet_prefix + netinfo.get(each).get('VNET') + nat_suffix + " " + netinfo.get(each).get("NAT"))
+        except OSError as err:
+            print(err)
+            logger.debug(err)
+        print("{:-^40s}".format("Build Complete"))
+        networking.close()
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
+def netstop():
+    # Stop VMWare Fusion Networking
+    try:
+        print("{:-^40s}".format("Stopping"))
+        call(
+            ["sudo", "/Applications/VMware Fusion.app/Contents/Library/vmnet-cli", "--stop"]
+            )
+        print("{:-^40s}".format("Stopped"))
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
+def netstart():
+    # Stop VMWare Fusion Networking
+    try:
+        print("{:-^40s}".format("Starting"))
+        call(
+            ["sudo", "/Applications/VMware Fusion.app/Contents/Library/vmnet-cli", "--start"]
+            )
+        print("{:-^40s}".format("Started"))
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
+def netconfigure():
+    # Configure VMWare Fusion Networking
+    try:
+        print("{:-^40s}".format("vnet-cli configurator"))
+        call(
+            ["sudo", "/Applications/VMware Fusion.app/Contents/Library/vmnet-cli", "--configure"]
+            )
+        print("{:-^40s}".format("configuration complete"))
+    except OSError as err:
+        print(err)
+        logger.debug(err)
 
 def network_loader():
     '''
     Loads network settings for SE Virtual Environment.
-    TODO: Cleanup functions, remove installer files.
     TODO: Validate if Network is already configured.
     ''' 
     try:
-        if system() == "Darwin":
-            logger.info("Going to get network loader script. %s" % (fusion_url))
-            save(fusion_url, getuser() + os.sep + fusion_loader)
-            print("{:-^30s}".format("Automatically Configuring Network."))
-            print("{:-^30s}".format("Please enter SSO password."))
-            call(["sudo", python_mac, getuser() + os.sep + fusion_loader])
-        elif system() == "Windows":
+        netinfo = getnet(netCFG)
+        home = getuser()
+        system_type = system()
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+    try:
+        if system_type == "Darwin":
+            stop_fusion()
+            enablep()
+            netcheck(home)
+            netmove(netfile)
+            netbuilder(netinfo, netfileheader, home)
+            netcreate(home + os.sep + "networking", netfile)
+            start_fusion()
+            netstop()
+            netconfigure()
+            netstart()
+            shutil.rmtree(home + os.sep + "networking")
+        elif system_type == "Windows":
             print("VMware Workstation import process is in the GUI.")
             print("This process should have already been completed.")
             print(network_configure)
         else:
-            print("Unsupported OS detected, program will exit.")
-            logger.info("Unsupported OS. Now exiting.")
-            exit()
-    except:
-        logger.debug("Exception occured in network_loader() os type: %s" % (system()))
+            logger.debug("Not MacOS, found %s" % system())
+            print("Not MacOS, found %s" % system())
+    except OSError as err:
+        logger.debug(err)
+        print(err)
 
-def set_auth_code(passkey, fwip, authcode):
-    try:
-        ctype = "op"
-        cmd = "<request><license><fetch><auth-code>%s</auth-code></fetch></license></request>" % (authcode)
-        call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
-        r = requests.get(call, verify=False)
-        logger.debug("set_auth_code() returned %s" % r.text)
-        print("Set Authcode Function returned: %s" % r.text)
-        return r.text
-    except requests.exceptions.ConnectionError as e:
-        print("There may have been a problem with setting the authCode.")
-        print("Please check your VM-Series to validate licensing.")
-        logger.debug("Exception as %s" % e)
-
-def fetchlic(passkey):
-    try:
-        ctype = "op"
-        cmd = "<request><license><fetch/></license></request>"
-        call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
-        r = requests.get(call, verify=False)
-        return r.text
-    except requests.exceptions.ConnectionError as e:
-        print("There was a problem with fetching licenses from the support server.")
-        print("If this is helpful the error was captured as: " + e)
-
-def api_access_check(fwip):
-    try:
-        # old admin password check
-        result8 = syscheck(passkey8,fwip)
-        # new lab passwordk check
-        result9 = syscheck(passkey9,fwip)
-        # TODO: Clean this up if possible.
-        if (result8 == 200):
-            logger.debug("Access successful with legacy api-key %s" % passkey8)
-            passkey = passkey8
-            print("Access with admin:paloalto, old version detected.")
-            return passkey
-        elif(result9 == 200):
-            logger.debug("Access successful with new api-key %s " % passkey9)
-            print("Access with admin:Paloalto1!, new version detected.")
-            passkey = passkey9
-            return passkey
-        else:
-            print("Access failed, do you have a custom admin password?")
-            return passkey8
-    except requests.exceptions.ConnectionError as e:
-        print("Attempted to access API. Network or System not available.")
-        print("Please license VM-Series in the GUI.")
-        print("https://192.168.55.10")
-
-def syscheck(passkey,fwip):
-    try:
-        ctype = "op"
-        cmd = "<show><system><info></info></system></show>"
-        call = "https://%s/api/?type=%s&cmd=%s&key=%s" % (fwip, ctype, cmd, passkey)
-        r = requests.get(call, verify=False)
-        return r.status_code
-    except requests.exceptions.ConnectionError as e:
-        print("Attempted to access API. System not available.")
-        print(start_message)
-        
-def pan_license(fwip):
-    '''
-    Licenses VM-Series.
-    TODO: Add Hash Checking for vm50auth.txt
-    ''' 
-    try:
-        print("Attempting to licenses vm-series.")
-        try:
-            print("starting os check.")
-            if system() == "Darwin":
-                if findfile("vm50auth.txt",getuser() + os.sep + str(r"Google Drive File Stream" + os.sep + r"My Drive" + os.sep + r"Beta")):
-                    authcode = str(open(findfile("vm50auth.txt",getuser() + os.sep + str(r"Google Drive File Stream" + os.sep + r"My Drive" + os.sep + r"Beta")), "r").read().rstrip())
-                    logger.debug("Read file vm50auth.txt")
-                else:
-                    print(print_authcode_message)
-                    authcode = input("ENTER AUTH CODE:")
-            elif system() == "Windows":
-                if findfile("vm50auth.txt",gstream):
-                    authcode = open(findlic("vm50auth.txt"), "r").read().rstrip()
-                    logger.debug("Read file vm50auth.txt")
-                else:
-                    print(print_authcode_message)
-                    authcode = input("ENTER AUTH CODE:")
-            else:
-                print("Unsupported OS Detected, Exiting...")
-                logger.debug("Unsupported OS Detected %s" % (system()))
-                exit()
-        except IOError as e:
-            logger.debug("IOError as %s" % (e))
-            print("IOerror")
-        logger.info("Starting licensing process.")
-        passkey = api_access_check(fwip)
-        if syscheck(passkey,fwip) == 200: 
-            auth_results = set_auth_code(passkey, fwip, authcode)
-            logger.debug("Sent authcode to VM-Series, returned %s"
-                        % (auth_results))
-            print("Sent authcode to VM-Series, it returned %s"
-                % (auth_results))
-            time.sleep(5)
-        else:
-            count = 1
-            while syscheck(passkey, fwip) != 200:
-                print("Did you start the VM-Series?")
-                print("VM-Series API is not available. Waiting 60 Seconds then retrying.")
-                if count == 1:
-                    print(start_message_again)
-                    count = 0
-                time.sleep(60)
-                passkey = api_access_check(fwip)
-                if syscheck(passkey,fwip) == 200:
-                    logger.debug("Set Support Key temporarily for CSP 245")
-                    auth_results = set_auth_code(passkey, fwip, authcode)
-                    logger.debug("Attempted to send authcode to VM-Series, returned %s"
-                                % (auth_results))
-                    print("Sent Authcode to VM-Series, it returned %s"
-                        % (auth_results))
-    except:
-        logger.debug("Exception occured in the license process")
-        
+def verify_continue():
+    answer = None 
+    print(continue_banner)
+    while answer not in ("yes", "no"): 
+        answer = input("Enter yes or no: ") 
+        if answer == "yes": 
+             print(continue_banner)
+        elif answer == "no": 
+             print("Installer will Exit in 10 seconds.")
+             print("Log into Slack #labinabox for help.")
+             sleep(5)
+             print(major_error)
+             sleep(5)
+             #exit() 
+        else: 
+        	print("Please enter yes or no.")        
 def main():
     oscheck = system()
     try:
-        vminfo = getvminfo(vminfo_url, vminfo_filename)
+        os.mkdir(getuser() + os.sep + "tmp")
+        print("Working Directory '%s' created" % (getuser() + os.sep + "tmp"))
+        os.chdir(getuser() + os.sep + "tmp")
+        tmp = getuser() + os.sep + "tmp"
+        print("Changed to %s working directory." % (getuser() + os.sep + "tmp"))
+        print("The script will attempt to remove %s upon completion." % (getuser() + os.sep + "tmp"))
+    except OSError as error:
+            print(error)
+            print("Directory '%s' could not be created" % (getuser() + os.sep + "tmp"))
+            print("This is a major error.")
+            verify_continue()
+            logger.debug("Directory '%s' could not be created" % (getuser() + os.sep + "tmp"))
+    try:
+        vminfo = getvminfo(vminfo_url)
         network_loader()
         for each in vminfo:
             if findova(vminfo.get(each).get('ova')):
                 print("\n")
+                print()
                 print("{:-^30s}".format("Searching"))
                 logger.debug("File located: %s" % (vminfo.get(each).get('ova')))
                 print("SUCCESS: File %s Located." % (vminfo.get(each).get('ova')))
@@ -940,15 +991,14 @@ def main():
                                 try:
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_fusion()
-                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        print(start_message)
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                         time.sleep(10)
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                         start_fusion()
                                     else:
                                         pass
@@ -964,15 +1014,14 @@ def main():
                                 try:
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_fusion()
-                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        print(start_message)
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                         time.sleep(10)
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                         start_fusion()
                                     else:
                                         pass
@@ -998,14 +1047,14 @@ def main():
                                 try:
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
-                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        print(start_message)
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
+                                        time.sleep(10)
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                         start_workstation()
                                     else:
                                         pass
@@ -1031,14 +1080,14 @@ def main():
                                 try:
                                     if vminfo.get(each).get('name') == "pan-vm50":
                                         stop_workstation()
-                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'))
-                                        print(start_message)
+                                        get_vmx(panos_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
+                                        time.sleep(10)
                                     elif vminfo.get(each).get('name') == "linux-utility":
-                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(setools_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-dc":
-                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_dc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                     elif vminfo.get(each).get('name') == "msft-rodc":
-                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'))
+                                        get_vmx(msft_rodc_vmx, vminfo.get(each).get('vmx'), each, vminfo, tmp)
                                         start_workstation()
                                     else:
                                         pass
@@ -1079,17 +1128,27 @@ def main():
                     logger.debug("Tried to open browser to SourceURL."
                                     + " Unsupported OS detected")
                 print("\n")
-                print("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
-                logger.info("Exiting install process, could not find %s" % (vminfo.get(each).get('ova')))
-                exit()
-        pan_license(fwip)
-    except:
+                print("Install process, could not find %s" % (vminfo.get(each).get('ova')))
+                logger.info("Install process, could not find %s" % (vminfo.get(each).get('ova')))
+                print(missing_banner)
+                print("\n\n Script will continue without: %s" % (vminfo.get(each).get('ova')))
+                pass
+        try:
+            os.chdir(getuser())
+            shutil.rmtree(getuser() + os.sep + "tmp")
+            print("Directory '%s' has been removed successfully" % (getuser() + os.sep + "tmp"))
+        except OSError as err:
+            print(err)
+            print("Directory '%s' can not be removed" % (getuser() + os.sep + "tmp"))
+    
+    except OSError as err:
         print ("\n")
         print("{:-^30s}".format("ERROR"))
         print(
             "A major error has occured and the install process has halted."
             )
-        logger.debug("Error, install halted.")
+        print(err)
+        logger.debug(err)
         print("For support contact #labinabox on Slack.")
         print("{:-^30s}".format("ERROR"))
         print ("\n")
