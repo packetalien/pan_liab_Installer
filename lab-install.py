@@ -766,6 +766,7 @@ def stopvm(vmx):
         logger.debug("Succesfully deleted %s" % (vmx))
     except IOError as e:
         logger.debug("IOError as %s" % (e))
+
 def netmove(netfile):
     try:
         print("{:-^40s}".format("Backing up Config"))
@@ -928,7 +929,8 @@ def network_loader():
             netstop()
             netconfigure()
             netstart()
-            shutil.rmtree(home + os.sep + "networking")
+            if os.path.exists(home + os.sep + "networking"):
+                shutil.rmtree(home + os.sep + "networking")
         elif system_type == "Windows":
             print("VMware Workstation import process is in the GUI.")
             print("This process should have already been completed.")
