@@ -314,6 +314,16 @@ def timestamp():
     stamp = strftime("%Y%m%d-%H%M%S")
     return stamp
 
+def filetimestamp():
+    try:
+        filetimestamp = time.strftime("%Y%m%d-%H%M%S")
+        tagstamp = filetimestamp + ".bak"
+        logger.info("Returning %s" % tagstamp)
+        return tagstamp
+    except OSError as err:
+        print(err)
+        logger.debug(err)
+
 def searchdir():
     try:
         if system() == "Darwin":
