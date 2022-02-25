@@ -103,7 +103,7 @@ vm50auth = "https://drive.google.com/file/d/1PWEnzE6S4AsRPt1xeDMjENCAZD-tKpoS/vi
 vmware_dir_windows = "Documents\Virtual Machines"
 vmware_dir_macos = "Virtual Machines.localized"
 IT_SCCM_dir = "C:\ProgramData"
-gstream = "D:\Middleware\_Virtual_Machine_Images\_PaloAltoNetworks\DIAB_3.0.64"
+gstream = "g:\"
 
 # Legacy Directory (deprecated)
 legacy_dir = "IT-Managed-VMs"
