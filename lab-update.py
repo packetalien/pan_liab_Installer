@@ -49,6 +49,7 @@ import shutil
 import json
 import glob
 import logging
+import ssl
 from shutil import rmtree
 from urllib import request
 from time import strftime
@@ -207,7 +208,9 @@ Art by Shanaka Dias
 :....::''::/  | : :|''| "/ /_=_=_=_=_=/ :_[__'_\3_)
  ''      '-''-'-'.__)-'
 '''
-
+# WARNING DOES NOT VERIFY SSL
+# TODO: Fix this after SE Summit
+ssl._create_default_https_context = ssl._create_unverified_context
 # Functions
 
 def getuser():
