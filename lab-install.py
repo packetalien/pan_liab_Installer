@@ -46,7 +46,6 @@ import json
 import glob
 import logging
 import ssl
-from distutils import errors
 from shutil import rmtree
 from urllib import request
 from time import strftime
