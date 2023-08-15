@@ -1,0 +1,21 @@
+SamAccountName,RODC User,Domain Admin,FirstName,LastName,Description,Department,Country,UserPrincipalName,Password,OU,Maildomain
+sherlockholmes,Yes,,Sherlock,Holmes,Consulting Detective,Scotland Yard,United Kingdom,sherlockholmes@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+johnwatson,No,,John,Watson,Medical Doctor,Medical Practice,United Kingdom,johnwatson@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+ireneadler,No,,Irene,Adler,Opera Singer,,United Kingdom,ireneadler@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+mycroft,Yes,Yes,Mycroft,Holmes,Government Official,Government Office,United Kingdom,mycroft@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+profchallenger,No,,Professor,Challenger,Adventurer,Exploration Society,United Kingdom,profchallenger@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+rachelhowells,No,,Rachel,Howells,Housekeeper,,United Kingdom,rachelhowells@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+sigersonbell,No,,Sigerson,Bell,Writer,Author,United Kingdom,sigersonbell@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+ireneadler2,No,,Irene,Adler,Opera Singer,,United Kingdom,ireneadler2@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+jamesmoriarty,No,,James,Moriarty,Criminal Mastermind,Crime Syndicate,United Kingdom,jamesmoriarty@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+marymorstan,No,,Mary,Morstan,Nurse,Medical Practice,United Kingdom,marymorstan@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+gregorylestrade,No,,Gregory,Lestrade,Police Inspector,Scotland Yard,United Kingdom,gregorylestrade@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+violethunter,No,,Violet,Hunter,Governess,,United Kingdom,violethunter@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+charlesharker,No,,Charles,Harker,Solicitor,,United Kingdom,charlesharker@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+jeremiahhayling,No,,Jeremiah,Hayling,Retired Sea Captain,,United Kingdom,jeremiahhayling@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+ebenezerprout,No,,Ebenezer,Prout,Music Teacher,,United Kingdom,ebenezerprout@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+jonathansmall,No,,Jonathan,Small,Criminal,,United Kingdom,jonathansmall@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+elizabethholder,No,,Elizabeth,Holder,Housewife,,United Kingdom,elizabethholder@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+nevillesharp,No,,Neville,Sharp,Journalist,,United Kingdom,nevillesharp@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+jeremiahfisher,No,,Jeremiah,Fisher,Boatman,,United Kingdom,jeremiahfisher@democloud.ai,Paloalto1!,OU=Users,democloud.ai
+ralphsmith,No,,Ralph,Smith,Shopkeeper,,United Kingdom,ralphsmith@democloud.ai,Paloalto1!,OU=Users,democloud.ai
